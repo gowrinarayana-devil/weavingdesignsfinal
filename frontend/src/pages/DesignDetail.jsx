@@ -134,7 +134,7 @@ export default function DesignDetail() {
           <div className="absolute inset-0 flex flex-wrap items-center justify-center gap-12 pointer-events-none z-10 select-none overflow-hidden opacity-10 rotate-12">
             {[...Array(24)].map((_, i) => (
               <span key={i} className="font-display font-extrabold text-sm tracking-wider uppercase text-slate-900 dark:text-slate-100">
-                StitchLoom Protected
+                WEAVING DESIGNS Protected
               </span>
             ))}
           </div>
@@ -163,25 +163,7 @@ export default function DesignDetail() {
             </p>
           </div>
 
-          {/* Stitch parameters card */}
-          <div className="bg-slate-100/50 dark:bg-dark-900/60 rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-slate-400 text-xs block">Stitch Count</span>
-              <strong className="text-slate-800 dark:text-slate-200 font-semibold">{design.stitches?.toLocaleString() || '15,000'}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 text-xs block">File Formats Included</span>
-              <strong className="text-slate-800 dark:text-slate-200 font-semibold truncate block" title={design.formats}>{design.formats}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 text-xs block">Dimensions (Height × Width)</span>
-              <strong className="text-slate-800 dark:text-slate-200 font-semibold">{design.height} × {design.width}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400 text-xs block">Colors Counts</span>
-              <strong className="text-slate-800 dark:text-slate-200 font-semibold">{design.colors} thread changes</strong>
-            </div>
-          </div>
+
 
           {/* Purchase details */}
           <div className="flex items-baseline space-x-3">

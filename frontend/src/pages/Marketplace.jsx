@@ -99,10 +99,10 @@ export default function Marketplace() {
             <span>Premium Files</span>
           </span>
           <h1 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl leading-tight">
-            Craft Masterpieces with Premium Embroidery Designs
+            Craft Masterpieces with Premium Weaving Designs
           </h1>
           <p className="text-slate-300 mt-4 text-base sm:text-lg">
-            Download production-ready patterns compatible with all major computer-controlled embroidery machines. Fully watermarked previews, secure Razorpay checkout, and lifetime instant downloads.
+            Download production-ready patterns compatible with all major computer-controlled weaving machines. Fully watermarked previews, secure Razorpay checkout, and lifetime instant downloads.
           </p>
         </div>
         {/* Background Decorative Art */}
@@ -252,7 +252,7 @@ export default function Marketplace() {
             </div>
           ) : (
             <div className="text-center py-16 bg-white dark:bg-dark-900/40 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
-              <p className="text-slate-500 dark:text-slate-400 font-medium">No embroidery designs found matching the current filters.</p>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">No weaving designs found matching the current filters.</p>
               <button
                 onClick={() => { setSearch(''); setSelectedCategory('All'); }}
                 className="text-brand-500 font-bold hover:underline mt-2 text-sm"

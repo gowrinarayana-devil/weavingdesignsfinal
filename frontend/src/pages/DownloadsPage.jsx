@@ -103,7 +103,7 @@ export default function DownloadsPage() {
       // Open link in browser to initiate file download
       const link = document.createElement('a');
       link.href = signedUrl;
-      link.setAttribute('download', `StitchLoom_design_${designId}.zip`);
+      link.setAttribute('download', `WEAVING_DESIGNS_design_${designId}.zip`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

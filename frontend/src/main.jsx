@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.jsx'
 import './index.css'
+import axios from 'axios'
+
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
 
 // Initialize React Query Client
 const queryClient = new QueryClient({

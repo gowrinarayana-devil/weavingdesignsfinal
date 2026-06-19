@@ -19,6 +19,32 @@ export default function CheckoutPage() {
   // State for mock payment dialog popup
   const [showMockModal, setShowMockModal] = useState(false);
   const [mockOrderDetails, setMockOrderDetails] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
+
+  const triggerAutomaticDownload = async (designId, customerEmail) => {
+    setDownloading(true);
+    setDownloadError('');
+    try {
+      const res = await axios.post(
+        '/api/downloads/generate-url',
+        { designId, email: customerEmail }
+      );
+      const { signedUrl } = res.data;
+
+      const link = document.createElement('a');
+      link.href = signedUrl;
+      link.setAttribute('download', `WEAVING_DESIGNS_design_${designId}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Automatic download failed:', err);
+      setDownloadError('Could not start download automatically. You can retrieve it manually on the Downloads page.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     // Redirect if cart is empty and checkout hasn't succeeded
@@ -62,7 +88,7 @@ export default function CheckoutPage() {
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'StitchLoom Marketplace',
+        name: 'WEAVING DESIGNS Marketplace',
         description: `Purchase: ${orderData.design.title}`,
         image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=100&q=80',
         order_id: orderData.order_id,
@@ -83,6 +109,7 @@ export default function CheckoutPage() {
             if (verifyRes.data.success) {
               setSuccess(true);
               clearCart();
+              triggerAutomaticDownload(designToBuy.id, email);
             } else {
               setError('Payment verification failed.');
             }
@@ -93,7 +120,7 @@ export default function CheckoutPage() {
           }
         },
         prefill: {
-          name: 'Embroidery Customer',
+          name: 'Weaving Customer',
           email: email,
         },
         theme: {
@@ -143,6 +170,7 @@ export default function CheckoutPage() {
       if (verifyRes.data.success) {
         setSuccess(true);
         clearCart();
+        triggerAutomaticDownload(mockOrderDetails.design.id, email);
       } else {
         setError('Simulation verification failed.');
       }
@@ -161,8 +189,22 @@ export default function CheckoutPage() {
         </div>
         <h1 className="font-display font-black text-2xl text-slate-800 dark:text-white">Payment Successful!</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
-          Your order has been verified. The digital files are now available inside your downloads center.
+          Your order has been verified.
         </p>
+
+        {downloading ? (
+          <div className="mt-6 flex flex-col items-center justify-center space-y-2 text-xs text-brand-500">
+            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-brand-500"></div>
+            <span>Starting your download automatically...</span>
+          </div>
+        ) : downloadError ? (
+          <p className="mt-6 text-xs text-red-500 bg-red-500/10 border border-red-500/20 p-3 rounded-xl">{downloadError}</p>
+        ) : (
+          <p className="mt-6 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-3.5 rounded-xl font-medium">
+            ✓ Your download has started automatically!
+          </p>
+        )}
+
         <div className="mt-8 space-y-3">
           <Link
             to="/downloads"

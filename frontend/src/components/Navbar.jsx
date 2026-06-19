@@ -30,11 +30,9 @@ export default function Navbar() {
           {/* Logo Brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="bg-brand-500 text-white p-2 rounded-lg flex items-center justify-center shadow-md shadow-brand-500/20">
-                <Scissors size={20} className="rotate-95" />
-              </div>
+              <img src="/logo.jpg" alt="WEAVING DESIGNS Logo" className="w-10 h-10 object-cover rounded-lg shadow-md border border-slate-200/50 dark:border-slate-800/40" />
               <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-600 to-brand-500 dark:from-brand-500 dark:to-teal-300 bg-clip-text text-transparent">
-                StitchLoom
+                WEAVING DESIGNS
               </span>
             </Link>
           </div>

@@ -11,10 +11,7 @@ import DesignDetail from './pages/DesignDetail';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import DownloadsPage from './pages/DownloadsPage';
-import Login from './pages/Login';
 
-// Route Guards
-import { UserRoute } from './components/ProtectedRoutes';
 
 export default function App() {
   return (
@@ -29,13 +26,8 @@ export default function App() {
               <Route path="/" element={<Marketplace />} />
               <Route path="/design/:id" element={<DesignDetail />} />
               <Route path="/cart" element={<CartPage />} />
-              <Route path="/login" element={<Login />} />
-              
-              {/* Authenticated Customer Routes */}
-              <Route element={<UserRoute />}>
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/downloads" element={<DownloadsPage />} />
-              </Route>
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/downloads" element={<DownloadsPage />} />
               
               {/* Fallback route */}
               <Route path="*" element={<Marketplace />} />

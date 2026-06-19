@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }) => {
         const mockSessionUser = {
           id: isMockAdmin ? 'mock-admin-uuid-0001' : 'mock-user-uuid-0002',
           email,
-          name: isMockAdmin ? 'System Admin' : 'Embroidery Customer',
+          name: isMockAdmin ? 'System Admin' : 'Weaving Customer',
           role: isMockAdmin ? 'admin' : 'user'
         };
 

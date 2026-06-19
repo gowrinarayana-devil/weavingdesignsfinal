@@ -98,7 +98,8 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      setError('Failed to fetch dashboard data. Please verify backend state.');
+      const serverMsg = err.response?.data?.error || err.message || 'Unknown error';
+      setError(`Failed to fetch dashboard data: ${serverMsg}`);
     } finally {
       setLoading(false);
     }
@@ -210,7 +211,7 @@ export default function AdminDashboard() {
         if (dbErr) throw dbErr;
       }
 
-      setSuccess(`Embroidery Design "${title}" uploaded and registered successfully!`);
+      setSuccess(`Weaving Design "${title}" uploaded and registered successfully!`);
       // Reset inputs
       setTitle('');
       setDescription('');
@@ -412,7 +413,7 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div>
         <h1 className="font-display font-black text-3xl text-slate-800 dark:text-white">Admin Management Center</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Review revenue analytics and upload new embroidery assets.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Review revenue analytics and upload new weaving assets.</p>
       </div>
 
       {/* Messages */}
@@ -456,7 +457,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
             <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-xl"><FileImage size={24} /></div>
             <div>
-              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider">Embroidery Catalog</span>
+              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider">Weaving Catalog</span>
               <strong className="text-slate-800 dark:text-slate-100 text-xl font-display font-bold">{stats.totalDesigns}</strong>
             </div>
           </div>
@@ -528,7 +529,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
           <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
             <Upload size={18} className="text-brand-500" />
-            <span>Upload New Embroidery Design</span>
+            <span>Upload New Weaving Design</span>
           </h3>
 
           <form onSubmit={handleUploadDesign} className="space-y-4">
@@ -775,7 +776,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-display font-black text-lg text-slate-900 dark:text-white">Update Embroidery Design</h3>
+              <h3 className="font-display font-black text-lg text-slate-900 dark:text-white">Update Weaving Design</h3>
               <button onClick={cancelEdit} className="p-1.5 hover:bg-slate-100 dark:hover:bg-dark-950 rounded-lg text-slate-400 transition-colors">
                 <X size={20} />
               </button>

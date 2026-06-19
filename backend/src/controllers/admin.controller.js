@@ -257,7 +257,7 @@ exports.getDashboardStats = async (req, res) => {
       status: o.payment_status,
       created_at: o.created_at,
       title: designMap[o.design_id] || 'Deleted Design',
-      name: profileMap[o.user_id]?.name || 'Embroidery Customer',
+      name: profileMap[o.user_id]?.name || 'Weaving Customer',
       email: profileMap[o.user_id]?.email || 'N/A'
     }));
 

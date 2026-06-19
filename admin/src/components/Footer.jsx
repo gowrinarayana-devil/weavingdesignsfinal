@@ -7,11 +7,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-900 pb-6 mb-6">
           <div className="flex items-center space-x-2">
-            <div className="bg-brand-500 text-white p-1.5 rounded-lg flex items-center justify-center">
-              <Scissors size={18} className="rotate-95" />
-            </div>
+            <img src="/logo.jpg" alt="WEAVING DESIGNS Logo" className="w-8 h-8 object-cover rounded-lg shadow border border-slate-200/50 dark:border-slate-800/40" />
             <span className="font-display font-extrabold text-lg tracking-tight text-slate-800 dark:text-slate-200">
-              StitchLoom <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-650 dark:text-slate-350 px-2 py-0.5 rounded ml-2">Admin Portal</span>
+              WEAVING DESIGNS <span className="text-xs bg-slate-200 dark:bg-slate-800 text-slate-650 dark:text-slate-350 px-2 py-0.5 rounded ml-2">Admin Portal</span>
             </span>
           </div>
           <p className="text-sm text-center md:text-right max-w-md">
@@ -20,7 +18,7 @@ export default function Footer() {
         </div>
         
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p>&copy; {new Date().getFullYear()} StitchLoom. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} WEAVING DESIGNS. All rights reserved.</p>
           <div className="flex space-x-6">
             <a href="http://localhost:3000" className="hover:text-brand-500 transition-colors">Marketplace</a>
             <span className="text-slate-400">Admin Session Secured</span>

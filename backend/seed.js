@@ -80,7 +80,7 @@ async function main() {
     await seedUser('admin@example.com', 'admin123', 'System Admin', 'admin');
     
     // Seed customer
-    await seedUser('customer@example.com', 'user123', 'Embroidery Customer', 'user');
+    await seedUser('customer@example.com', 'user123', 'Weaving Customer', 'user');
     
     console.log('\n🌱 Seeding completed!');
   } catch (err) {

@@ -44,11 +44,9 @@ export default function Login() {
       <div className="max-w-md w-full glass p-8 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-800/40 animate-fade-in">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex bg-brand-500 text-white p-3 rounded-xl shadow-lg shadow-brand-500/20 mb-3 justify-center items-center">
-            <Scissors size={26} className="rotate-95" />
-          </div>
+          <img src="/logo.jpg" alt="WEAVING DESIGNS Logo" className="w-16 h-16 object-cover rounded-2xl mx-auto shadow-lg border border-slate-200/50 dark:border-slate-800/40 mb-3" />
           <h2 className="font-display font-extrabold text-2xl text-slate-800 dark:text-slate-100">
-            StitchLoom Admin Portal
+            WEAVING DESIGNS Admin Portal
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
             Sign in to access catalog upload and metrics dashboard.
