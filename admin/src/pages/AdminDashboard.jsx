@@ -98,7 +98,21 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      const serverMsg = err.response?.data?.error || err.message || 'Unknown error';
+      let serverMsg = 'Unknown error';
+      if (err.response?.data) {
+        const errData = err.response.data;
+        if (typeof errData.error === 'object' && errData.error !== null) {
+          serverMsg = errData.error.message || JSON.stringify(errData.error);
+        } else if (typeof errData.error === 'string') {
+          serverMsg = errData.error;
+        } else if (typeof errData === 'string') {
+          serverMsg = errData;
+        } else {
+          serverMsg = JSON.stringify(errData);
+        }
+      } else {
+        serverMsg = err.message || 'Unknown error';
+      }
       setError(`Failed to fetch dashboard data: ${serverMsg}`);
     } finally {
       setLoading(false);
