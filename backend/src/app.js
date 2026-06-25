@@ -12,11 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security and CORS middleware configurations
-app.use(cors({
-  origin: '*', // In production, replace with specific frontend domains (e.g. Vercel)
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-token', 'x-mock-user', 'x-mock-user-id', 'x-mock-role']
-}));
+app.use(cors());
 
 // Body parser middleware
 app.use(bodyParser.json());

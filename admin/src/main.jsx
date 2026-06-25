@@ -11,6 +11,9 @@ if (apiURL) {
   if (!/^https?:\/\//i.test(apiURL)) {
     apiURL = `https://${apiURL}`
   }
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    apiURL = apiURL.replace(/^http:\/\//i, 'https://')
+  }
 }
 axios.defaults.baseURL = apiURL
 
