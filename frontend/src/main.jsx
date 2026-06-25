@@ -18,6 +18,7 @@ if (!apiURL && Capacitor.isNativePlatform()) {
 }
 
 axios.defaults.baseURL = apiURL
+console.log(`[API BaseURL] Active API base URL is: "${apiURL || '(relative)'}"`);
 
 // Initialize React Query Client
 const queryClient = new QueryClient({
