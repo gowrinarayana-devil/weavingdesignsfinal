@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
 import { Download, AlertCircle, FileArchive, Search, Clock } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 export default function DownloadsPage() {
   const [email, setEmail] = useState('');
@@ -103,12 +104,16 @@ export default function DownloadsPage() {
       const { signedUrl } = res.data;
 
       // Open link in browser to initiate file download
-      const link = document.createElement('a');
-      link.href = signedUrl;
-      link.setAttribute('download', `WEAVING_DESIGNS_design_${designId}.zip`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (Capacitor.isNativePlatform()) {
+        window.open(signedUrl, '_system');
+      } else {
+        const link = document.createElement('a');
+        link.href = signedUrl;
+        link.setAttribute('download', `WEAVING_DESIGNS_design_${designId}.zip`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
 
     } catch (err) {
       console.error('Download error:', err);

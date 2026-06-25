@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
 import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -36,12 +37,16 @@ export default function CheckoutPage() {
       );
       const { signedUrl } = res.data;
 
-      const link = document.createElement('a');
-      link.href = signedUrl;
-      link.setAttribute('download', `WEAVING_DESIGNS_design_${designId}.zip`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (Capacitor.isNativePlatform()) {
+        window.open(signedUrl, '_system');
+      } else {
+        const link = document.createElement('a');
+        link.href = signedUrl;
+        link.setAttribute('download', `WEAVING_DESIGNS_design_${designId}.zip`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (err) {
       console.error('Automatic download failed:', err);
       setDownloadError('Could not start download automatically. You can retrieve it manually on the Downloads page.');

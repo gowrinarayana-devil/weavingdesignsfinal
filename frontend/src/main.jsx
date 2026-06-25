@@ -5,8 +5,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.jsx'
 import './index.css'
 import axios from 'axios'
+import { Capacitor } from '@capacitor/core'
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
+let apiURL = import.meta.env.VITE_API_URL || ''
+
+if (!apiURL && Capacitor.isNativePlatform()) {
+  if (Capacitor.getPlatform() === 'android') {
+    apiURL = 'http://10.0.2.2:5000'
+  } else if (Capacitor.getPlatform() === 'ios') {
+    apiURL = 'http://localhost:5000'
+  }
+}
+
+axios.defaults.baseURL = apiURL
 
 // Initialize React Query Client
 const queryClient = new QueryClient({
