@@ -17,11 +17,9 @@ export default function Admin2FA() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Redirect if user is not logged in or not an admin
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    // 2FA has been disabled. Redirect directly to dashboard.
+    navigate('/');
+    return;
 
     const init2FA = async () => {
       try {

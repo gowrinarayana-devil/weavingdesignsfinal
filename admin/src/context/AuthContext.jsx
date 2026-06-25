@@ -22,10 +22,11 @@ export const AuthProvider = ({ children }) => {
           const parsed = JSON.parse(savedUser);
           setUser(parsed);
           setRole(parsed.role);
-          if (parsed.role === 'admin' && !adminToken) {
-            setTwoFactorRequired(true);
-          }
+          const dummyToken = 'mock_admin_session_token';
+          setAdminToken(dummyToken);
+          localStorage.setItem('adminToken', dummyToken);
         }
+        setTwoFactorRequired(false);
         setLoading(false);
         return;
       }
@@ -84,10 +85,12 @@ export const AuthProvider = ({ children }) => {
         setUser({ ...authUser, name: data.name, twoFactorEnabled: data.two_factor_enabled });
         setRole(data.role);
         
-        // If role is admin and we don't have a 2FA verified token, flag it
-        if (!adminToken) {
-          setTwoFactorRequired(true);
-        }
+        // Bypass 2FA requirement - get supabase session access token and set as adminToken
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token || '';
+        setAdminToken(token);
+        localStorage.setItem('adminToken', token);
+        setTwoFactorRequired(false);
       }
     } catch (err) {
       console.error('Failed to load user profile or not authorized:', err);
@@ -112,7 +115,7 @@ export const AuthProvider = ({ children }) => {
       if (isDummyClient) {
         const isMockAdmin = email.toLowerCase() === 'gudurupavan0297@gmail.com' && password === 'Ghjklasdf@1';
         if (!isMockAdmin) {
-          throw new Error('Invalid mock credentials. Admin login is gudurupavan0297@gmail.com / Ghjklasdf@1');
+          throw new Error('Invalid mock credentials.');
         }
 
         const mockSessionUser = {
@@ -126,9 +129,10 @@ export const AuthProvider = ({ children }) => {
         setRole(mockSessionUser.role);
         localStorage.setItem('mockUser', JSON.stringify(mockSessionUser));
         
-        if (!adminToken) {
-          setTwoFactorRequired(true);
-        }
+        const dummyToken = 'mock_admin_session_token';
+        setAdminToken(dummyToken);
+        localStorage.setItem('adminToken', dummyToken);
+        setTwoFactorRequired(false);
 
         setLoading(false);
         return { data: mockSessionUser, error: null };

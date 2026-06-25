@@ -70,11 +70,6 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser({ ...authUser, name: data.name, twoFactorEnabled: data.two_factor_enabled });
         setRole(data.role);
-        
-        // If role is admin and we don't have a 2FA verified token, flag it
-        if (data.role === 'admin' && !adminToken) {
-          setTwoFactorRequired(true);
-        }
       }
     } catch (err) {
       console.error('Failed to load user profile:', err);
@@ -138,7 +133,7 @@ export const AuthProvider = ({ children }) => {
         const isMockUser = password === 'user123';
         
         if (!isMockAdmin && !isMockUser) {
-          throw new Error('Invalid mock credentials. Use gudurupavan0297@gmail.com / Ghjklasdf@1 or customer@example.com / user123');
+          throw new Error('Invalid mock credentials.');
         }
 
         const mockSessionUser = {
@@ -152,9 +147,10 @@ export const AuthProvider = ({ children }) => {
         setRole(mockSessionUser.role);
         localStorage.setItem('mockUser', JSON.stringify(mockSessionUser));
         
-        if (mockSessionUser.role === 'admin' && !adminToken) {
-          setTwoFactorRequired(true);
-        }
+        const dummyToken = 'mock_admin_session_token';
+        setAdminToken(dummyToken);
+        localStorage.setItem('adminToken', dummyToken);
+        setTwoFactorRequired(false);
 
         setLoading(false);
         return { data: mockSessionUser, error: null };
