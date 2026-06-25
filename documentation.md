@@ -60,7 +60,7 @@ If you boot the frontend and backend without setting custom environment credenti
 * **Catalog Browsing:** Populates the catalog with featured mock designs.
 * **Authentication Shortcuts:** Use the developer quick-login buttons on the Login page:
   * **Customer:** `customer@example.com` (password: `user123`)
-  * **Admin:** `admin@example.com` (password: `admin123`)
+  * **Admin:** `gudurupavan0297@gmail.com` (password: `Ghjklasdf@1`)
 * **Admin 2FA Challenge:** Scan the displayed QR Code with Google Authenticator or enter the sandbox passcode **`123456`**.
 * **Payment Processing:** When checking out, a custom Simulator Modal overlay opens. Click **"Simulate Success"** to test successful Razorpay signature verification and order creation flows.
 * **Private Download Delivery:** Direct raw files are protected. Successful checkout simulation unlocks the download button, letting you retrieve the mock file link.

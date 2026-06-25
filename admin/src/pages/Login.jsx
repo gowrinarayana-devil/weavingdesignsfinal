@@ -34,11 +34,6 @@ export default function Login() {
     }
   };
 
-  const loadMockAdmin = () => {
-    setEmail('admin@example.com');
-    setPassword('admin123');
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-md w-full glass p-8 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-800/40 animate-fade-in">
@@ -78,7 +73,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 dark:bg-dark-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-500 transition-all text-sm"
-                placeholder="admin@example.com"
+                placeholder="gudurupavan0297@gmail.com"
                 required
               />
             </div>
@@ -113,20 +108,6 @@ export default function Login() {
             )}
           </button>
         </form>
-
-        {/* Sandbox Dev Shortcuts */}
-        <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 text-center">Sandbox Mock Credentials</p>
-          <div className="flex gap-2">
-            <button
-              onClick={loadMockAdmin}
-              className="flex-grow py-1.5 px-3 bg-slate-100 dark:bg-dark-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded text-xs font-medium text-slate-650 dark:text-slate-350 transition-colors text-center"
-            >
-              Autofill Sandbox Admin
-            </button>
-          </div>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-2">Password: admin123</p>
-        </div>
       </div>
     </div>
   );

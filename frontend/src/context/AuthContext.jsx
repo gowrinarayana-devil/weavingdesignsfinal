@@ -134,11 +134,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       if (isDummyClient) {
-        const isMockAdmin = email.toLowerCase() === 'admin@example.com' && password === 'admin123';
+        const isMockAdmin = email.toLowerCase() === 'gudurupavan0297@gmail.com' && password === 'Ghjklasdf@1';
         const isMockUser = password === 'user123';
         
         if (!isMockAdmin && !isMockUser) {
-          throw new Error('Invalid mock credentials. Use admin@example.com / admin123 or customer@example.com / user123');
+          throw new Error('Invalid mock credentials. Use gudurupavan0297@gmail.com / Ghjklasdf@1 or customer@example.com / user123');
         }
 
         const mockSessionUser = {

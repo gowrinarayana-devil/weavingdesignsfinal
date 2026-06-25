@@ -77,7 +77,7 @@ async function main() {
     console.log('🌱 Starting Supabase user seeding...');
     
     // Seed admin
-    await seedUser('admin@example.com', 'admin123', 'System Admin', 'admin');
+    await seedUser('gudurupavan0297@gmail.com', 'Ghjklasdf@1', 'System Admin', 'admin');
     
     // Seed customer
     await seedUser('customer@example.com', 'user123', 'Weaving Customer', 'user');
