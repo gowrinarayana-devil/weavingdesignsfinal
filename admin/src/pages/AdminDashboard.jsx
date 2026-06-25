@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { DollarSign, ShoppingBag, Users, FileImage, Upload, Plus, CheckCircle2, AlertCircle, Edit, Trash2, X } from 'lucide-react';
+import { DollarSign, ShoppingBag, Users, FileImage, Upload, Plus, CheckCircle2, AlertCircle, Edit, Trash2, X, Clock, Check, XCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { adminToken } = useAuth();
@@ -399,6 +399,80 @@ export default function AdminDashboard() {
     }
   };
 
+  // Approve pending UPI order
+  const handleApproveOrder = async (orderId, customerEmail, title) => {
+    if (!window.confirm(`Are you sure you want to approve this order? This will grant the customer access to download the design.`)) {
+      return;
+    }
+    setError('');
+    setSuccess('');
+
+    try {
+      if (isDummyClient) {
+        // Sandbox Mock Update
+        const updatedOrders = stats.recentOrders.map(o => o.id === orderId ? { ...o, status: 'success' } : o);
+        setStats({
+          ...stats,
+          recentOrders: updatedOrders,
+          totalRevenue: stats.totalRevenue + (stats.recentOrders.find(o => o.id === orderId)?.amount || 0),
+          totalOrders: stats.totalOrders + 1
+        });
+        setSuccess('Order approved successfully (Sandbox).');
+        return;
+      }
+
+      const { error: updateErr } = await supabase
+        .from('orders')
+        .update({ payment_status: 'success' })
+        .eq('id', orderId);
+
+      if (updateErr) throw updateErr;
+
+      setSuccess(`Order approved successfully! Access granted to ${customerEmail}.`);
+      fetchStatsAndCategories();
+
+    } catch (err) {
+      console.error('Failed to approve order:', err);
+      setError(err.message || 'Failed to approve order.');
+    }
+  };
+
+  // Reject pending UPI order
+  const handleRejectOrder = async (orderId, customerEmail) => {
+    if (!window.confirm(`Are you sure you want to reject this order? The customer will not be able to download the design.`)) {
+      return;
+    }
+    setError('');
+    setSuccess('');
+
+    try {
+      if (isDummyClient) {
+        // Sandbox Mock Update
+        const updatedOrders = stats.recentOrders.map(o => o.id === orderId ? { ...o, status: 'failed' } : o);
+        setStats({
+          ...stats,
+          recentOrders: updatedOrders
+        });
+        setSuccess('Order rejected (Sandbox).');
+        return;
+      }
+
+      const { error: updateErr } = await supabase
+        .from('orders')
+        .update({ payment_status: 'failed' })
+        .eq('id', orderId);
+
+      if (updateErr) throw updateErr;
+
+      setSuccess(`Order payment verification marked as failed.`);
+      fetchStatsAndCategories();
+
+    } catch (err) {
+      console.error('Failed to reject order:', err);
+      setError(err.message || 'Failed to reject order.');
+    }
+  };
+
   if (loading && !stats) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
@@ -695,6 +769,86 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* Customer Orders & UPI Approvals Section */}
+      <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+        <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+          <ShoppingBag size={18} className="text-brand-500" />
+          <span>Customer Orders & UPI Payment Approvals</span>
+        </h3>
+
+        {stats && stats.recentOrders && stats.recentOrders.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="pb-3 pr-4">Order Date</th>
+                  <th className="pb-3 pr-4">Customer Email</th>
+                  <th className="pb-3 pr-4">Design Purchased</th>
+                  <th className="pb-3 pr-4">Amount</th>
+                  <th className="pb-3 pr-4">UPI UTR Ref</th>
+                  <th className="pb-3 pr-4">Status</th>
+                  <th className="pb-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
+                {stats.recentOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
+                    <td className="py-3 pr-4 text-xs text-slate-500 dark:text-slate-400">
+                      {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
+                      {order.email}
+                    </td>
+                    <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
+                      {order.title}
+                    </td>
+                    <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-350">
+                      ₹{order.amount}
+                    </td>
+                    <td className="py-3 pr-4 font-mono text-xs text-brand-600 dark:text-brand-400 font-semibold">
+                      {order.payment_id || <span className="text-slate-400 font-sans font-normal italic">No Ref</span>}
+                    </td>
+                    <td className="py-3 pr-4 text-xs">
+                      {order.status === 'success' ? (
+                        <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold">Approved</span>
+                      ) : order.status === 'pending' ? (
+                        <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded font-bold animate-pulse">Pending Approval</span>
+                      ) : (
+                        <span className="bg-red-500/10 text-red-650 dark:text-red-400 px-2 py-0.5 rounded font-bold">Rejected</span>
+                      )}
+                    </td>
+                    <td className="py-3 text-right space-x-2">
+                      {order.status === 'pending' ? (
+                        <>
+                          <button
+                            onClick={() => handleApproveOrder(order.id, order.email, order.title)}
+                            className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow shadow-emerald-500/10"
+                          >
+                            <Check size={12} />
+                            <span>Approve</span>
+                          </button>
+                          <button
+                            onClick={() => handleRejectOrder(order.id, order.email)}
+                            className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow shadow-red-500/10"
+                          >
+                            <XCircle size={12} />
+                            <span>Reject</span>
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-slate-400 text-xs italic">Completed</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 italic">No orders logged in system.</p>
+        )}
       </div>
 
       {/* NEW: Manage Uploaded Designs Section */}

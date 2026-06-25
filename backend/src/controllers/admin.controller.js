@@ -241,10 +241,13 @@ exports.getDashboardStats = async (req, res) => {
         payment_status,
         created_at,
         design_id,
-        user_id
+        user_id,
+        customer_email,
+        payment_id,
+        order_id
       `)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(50);
 
     // Fetch corresponding user profiles
     const userIds = [...new Set((recentOrdersData || []).map(o => o.user_id).filter(Boolean))];
@@ -258,7 +261,9 @@ exports.getDashboardStats = async (req, res) => {
       created_at: o.created_at,
       title: designMap[o.design_id] || 'Deleted Design',
       name: profileMap[o.user_id]?.name || 'Weaving Customer',
-      email: profileMap[o.user_id]?.email || 'N/A'
+      email: o.customer_email || profileMap[o.user_id]?.email || 'N/A',
+      payment_id: o.payment_id,
+      order_id: o.order_id
     }));
 
     // Process monthly revenue metrics (Last 6 months)

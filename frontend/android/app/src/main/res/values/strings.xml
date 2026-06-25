@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WEAVING DESIGNS</string>
+    <string name="title_activity_main">WEAVING DESIGNS</string>
+    <string name="package_name">com.weavingdesigns.app</string>
+    <string name="custom_url_scheme">com.weavingdesigns.app</string>
+</resources>

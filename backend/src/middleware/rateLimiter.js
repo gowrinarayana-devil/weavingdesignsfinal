@@ -14,7 +14,7 @@ const apiLimiter = rateLimit({
 // Stricter limiter for checkout/payments to prevent abuse (15 order creation attempts per hour)
 const paymentLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 15,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

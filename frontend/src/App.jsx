@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 
 // Pages
 import Marketplace from './pages/Marketplace';
@@ -33,8 +32,6 @@ export default function App() {
               <Route path="*" element={<Marketplace />} />
             </Routes>
           </main>
-          
-          <Footer />
         </div>
       </CartProvider>
     </AuthProvider>

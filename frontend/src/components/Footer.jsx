@@ -23,8 +23,6 @@ export default function Footer() {
           <div className="flex space-x-6">
             <Link to="/" className="hover:text-brand-500 transition-colors">Marketplace</Link>
             <a href="http://localhost:8080" className="hover:text-brand-500 transition-colors">Admin Portal</a>
-            <a href="#" className="hover:text-brand-500 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-brand-500 transition-colors">Privacy Policy</a>
           </div>
         </div>
       </div>

@@ -1,9 +1,9 @@
 const crypto = require('crypto');
 const { supabaseAdmin, isDummy } = require('../config/supabase');
-const { razorpayInstance, isDummyRazorpay } = require('../config/razorpay');
+const { isDummyRazorpay } = require('../config/razorpay');
 
 /**
- * Creates a Razorpay order for a design purchase
+ * Creates a UPI payment session tracking entry for a design purchase
  */
 exports.createOrder = async (req, res) => {
   try {
@@ -36,84 +36,36 @@ exports.createOrder = async (req, res) => {
 
     const price = parseFloat(design.price);
     const amountInPaise = Math.round(price * 100);
+    const upiId = process.env.UPI_ID || '9052572363@ybl';
+    const orderId = `order_upi_${crypto.randomBytes(6).toString('hex')}`;
 
-    // If Razorpay is missing, run in dummy simulation mode
-    if (isDummyRazorpay) {
-      const mockOrderId = `order_mock_${crypto.randomBytes(6).toString('hex')}`;
-      
-      // Store pending order in Supabase
-      if (!isDummy) {
-        const { error: insertErr } = await supabaseAdmin
-          .from('orders')
-          .insert({
-            customer_email: email,
-            design_id: design.id,
-            payment_id: null,
-            order_id: mockOrderId,
-            amount: price,
-            payment_status: 'pending'
-          });
+    // Store pending order in Supabase
+    if (!isDummy) {
+      const { error: insertErr } = await supabaseAdmin
+        .from('orders')
+        .insert({
+          customer_email: email,
+          design_id: design.id,
+          payment_id: null,
+          order_id: orderId,
+          amount: price,
+          payment_status: 'pending'
+        });
 
-        if (insertErr) {
-          console.error('Failed to create pending order:', insertErr);
-          return res.status(500).json({ error: 'Failed to record purchase order.' });
-        }
+      if (insertErr) {
+        console.error('Failed to create pending order:', insertErr);
+        return res.status(500).json({ error: 'Failed to record purchase order.' });
       }
-
-      return res.status(200).json({
-        isMock: true,
-        key_id: 'rzp_test_mock',
-        amount: amountInPaise,
-        currency: 'INR',
-        order_id: mockOrderId,
-        design: { id: design.id, title: design.title }
-      });
     }
 
-    // Creating Razorpay Order
-    const options = {
+    return res.status(200).json({
+      success: true,
+      isMock: isDummyRazorpay, // Keep isMock true when key is dummy to allow frontend simulation UI
       amount: amountInPaise,
       currency: 'INR',
-      receipt: `receipt_${design.id.substring(0, 8)}`,
-      notes: {
-        design_id: design.id,
-        customer_email: email
-      }
-    };
-
-    razorpayInstance.orders.create(options, async (err, rzpOrder) => {
-      if (err) {
-        console.error('Razorpay order creation error:', err);
-        return res.status(500).json({ error: 'Failed to initiate Razorpay order.' });
-      }
-
-      // Record pending order in database
-      if (!isDummy) {
-        const { error: insertErr } = await supabaseAdmin
-          .from('orders')
-          .insert({
-            customer_email: email,
-            design_id: design.id,
-            payment_id: null,
-            order_id: rzpOrder.id,
-            amount: price,
-            payment_status: 'pending'
-          });
-
-        if (insertErr) {
-          console.error('Failed to record pending order:', insertErr);
-          return res.status(500).json({ error: 'Failed to record purchase order.' });
-        }
-      }
-
-      return res.status(200).json({
-        isMock: false,
-        key_id: process.env.RAZORPAY_KEY_ID,
-        amount: rzpOrder.amount,
-        currency: rzpOrder.currency,
-        order_id: rzpOrder.id,
-        design: { id: design.id, title: design.title }
-      });
+      order_id: orderId,
+      upi_id: upiId,
+      design: { id: design.id, title: design.title }
     });
 
   } catch (err) {
@@ -123,17 +75,21 @@ exports.createOrder = async (req, res) => {
 };
 
 /**
- * Verifies Razorpay payment signature and completes the order
+ * Verifies UPI payment references and updates status
  */
 exports.verifyPayment = async (req, res) => {
   try {
-    const { order_id, payment_id, signature, designId } = req.body;
+    const { order_id, payment_id, designId } = req.body; // payment_id will contain the user entered UTR
 
     if (!order_id || !designId) {
       return res.status(400).json({ error: 'Missing required parameters.' });
     }
 
-    // 1. Handle Dummy/Mock verification
+    if (!payment_id) {
+      return res.status(400).json({ error: 'UPI Transaction UTR/Reference ID is required.' });
+    }
+
+    // 1. Handle Dummy/Mock verification or auto-approval in sandbox mode
     if (isDummyRazorpay || order_id.startsWith('order_mock_')) {
       if (!isDummy) {
         // Find order and update to success
@@ -141,7 +97,7 @@ exports.verifyPayment = async (req, res) => {
           .from('orders')
           .update({
             payment_status: 'success',
-            payment_id: payment_id || `pay_mock_${crypto.randomBytes(6).toString('hex')}`
+            payment_id: payment_id
           })
           .eq('order_id', order_id);
 
@@ -158,54 +114,36 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    // 2. Real Payment verification using signature checking
-    if (!payment_id || !signature) {
-      return res.status(400).json({ error: 'Payment ID and signature are required.' });
+    // 2. Real Payment verification: check if UTR is 12 digits and auto-approve
+    const isUtrValid = /^\d{12}$/.test(payment_id);
+    if (!isUtrValid) {
+      return res.status(400).json({ error: 'Invalid UPI Transaction Reference. Must be a 12-digit numeric UTR ID.' });
     }
 
-    const secret = process.env.RAZORPAY_KEY_SECRET;
-    const generated_signature = crypto
-      .createHmac('sha256', secret)
-      .update(`${order_id}|${payment_id}`)
-      .digest('hex');
+    if (!isDummy) {
+      const { error: updateErr } = await supabaseAdmin
+        .from('orders')
+        .update({
+          payment_id: payment_id,
+          payment_status: 'success'
+        })
+        .eq('order_id', order_id);
 
-    const isValid = generated_signature === signature;
-
-    if (isValid) {
-      if (!isDummy) {
-        // Verify user holds this order and update status to success
-        const { error: updateErr } = await supabaseAdmin
-          .from('orders')
-          .update({
-            payment_status: 'success',
-            payment_id: payment_id
-          })
-          .eq('order_id', order_id);
-
-        if (updateErr) {
-          console.error('Order update error:', updateErr);
-          return res.status(500).json({ error: 'Payment verified, but failed to update order database.' });
-        }
+      if (updateErr) {
+        console.error('Failed to register payment UTR:', updateErr);
+        return res.status(500).json({ error: 'Failed to process transaction completion.' });
       }
-
-      return res.status(200).json({
-        success: true,
-        message: 'Payment verified and registered successfully.',
-        download_ready: true
-      });
-    } else {
-      // Flag order as failed
-      if (!isDummy) {
-        await supabaseAdmin
-          .from('orders')
-          .update({ payment_status: 'failed' })
-          .eq('order_id', order_id);
-      }
-      return res.status(400).json({ error: 'Payment signature verification failed.' });
     }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment verified and registered successfully.',
+      download_ready: true
+    });
 
   } catch (err) {
     console.error('Payment Verification Error:', err);
     return res.status(500).json({ error: 'Verification failed.' });
   }
 };
+

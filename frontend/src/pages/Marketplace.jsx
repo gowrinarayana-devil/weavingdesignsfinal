@@ -102,7 +102,7 @@ export default function Marketplace() {
             Craft Masterpieces with Premium Weaving Designs
           </h1>
           <p className="text-slate-300 mt-4 text-base sm:text-lg">
-            Download production-ready patterns compatible with all major computer-controlled weaving machines. Fully watermarked previews, secure Razorpay checkout, and lifetime instant downloads.
+            Download production-ready patterns compatible with all major computer-controlled weaving machines. Fully watermarked previews, instant UPI payments, and lifetime downloads.
           </p>
         </div>
         {/* Background Decorative Art */}

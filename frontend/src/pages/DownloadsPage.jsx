@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { Download, AlertCircle, FileArchive, Search } from 'lucide-react';
+import { Download, AlertCircle, FileArchive, Search, Clock } from 'lucide-react';
 
 export default function DownloadsPage() {
   const [email, setEmail] = useState('');
@@ -42,13 +42,14 @@ export default function DownloadsPage() {
     }
 
     try {
-      // Query successful orders for this email
+      // Query successful or pending orders for this email
       const { data, error: dbError } = await supabase
         .from('orders')
         .select(`
           id,
           payment_id,
           amount,
+          payment_status,
           created_at,
           designs (
             id,
@@ -59,7 +60,7 @@ export default function DownloadsPage() {
           )
         `)
         .eq('customer_email', email)
-        .eq('payment_status', 'success')
+        .in('payment_status', ['success', 'pending', 'failed'])
         .order('created_at', { ascending: false });
 
       if (dbError) throw dbError;
@@ -74,7 +75,8 @@ export default function DownloadsPage() {
             preview_image_url: design.preview_image_url,
             price: order.amount,
             orderDate: new Date(order.created_at).toLocaleDateString(),
-            paymentId: order.payment_id
+            paymentId: order.payment_id,
+            status: order.payment_status
           };
         });
         setPurchasedDesigns(formatted);
@@ -192,27 +194,39 @@ export default function DownloadsPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-4 border-t border-slate-100 dark:border-slate-800/50 pt-4 sm:pt-0 sm:border-t-0">
+                {/* Action Buttons / Status Badge */}
+                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-4 border-t border-slate-100 dark:border-slate-800/50 pt-4 sm:pt-0 sm:border-t-0 font-medium">
                   <div className="text-left sm:text-right">
                     <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Paid</span>
                     <span className="font-display font-extrabold text-slate-800 dark:text-slate-200 text-sm">₹{design.price}</span>
                   </div>
 
-                  <button
-                    onClick={() => handleDownload(design.id)}
-                    disabled={downloadingId === design.id}
-                    className="flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-brand-600/10 transition-all cursor-pointer"
-                  >
-                    {downloadingId === design.id ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                    ) : (
-                      <>
-                        <Download size={14} />
-                        <span>Download ZIP</span>
-                      </>
-                    )}
-                  </button>
+                  {design.status === 'success' ? (
+                    <button
+                      onClick={() => handleDownload(design.id)}
+                      disabled={downloadingId === design.id}
+                      className="flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-brand-600/10 transition-all cursor-pointer"
+                    >
+                      {downloadingId === design.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      ) : (
+                        <>
+                          <Download size={14} />
+                          <span>Download ZIP</span>
+                        </>
+                      )}
+                    </button>
+                  ) : design.status === 'pending' ? (
+                    <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-3 py-2 rounded-xl text-xs font-semibold select-none">
+                      <Clock size={13} className="animate-pulse" />
+                      <span>Verifying UTR</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 bg-red-500/10 text-red-650 dark:text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-xs font-semibold select-none">
+                      <AlertCircle size={13} />
+                      <span>Verification Failed</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

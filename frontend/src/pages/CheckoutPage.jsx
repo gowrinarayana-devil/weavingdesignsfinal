@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle } from 'lucide-react';
+import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft } from 'lucide-react';
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -16,11 +16,15 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   
-  // State for mock payment dialog popup
-  const [showMockModal, setShowMockModal] = useState(false);
-  const [mockOrderDetails, setMockOrderDetails] = useState(null);
+  // State for UPI checkout
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [upiOrderDetails, setUpiOrderDetails] = useState(null);
+  const [utr, setUtr] = useState('');
+  const [submittingUtr, setSubmittingUtr] = useState(false);
+  const [isPendingApproval, setIsPendingApproval] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const triggerAutomaticDownload = async (designId, customerEmail) => {
     setDownloading(true);
@@ -48,10 +52,10 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // Redirect if cart is empty and checkout hasn't succeeded
-    if (cartItems.length === 0 && !success) {
+    if (cartItems.length === 0 && !success && !isPendingApproval) {
       navigate('/cart');
     }
-  }, [cartItems, success, navigate]);
+  }, [cartItems, success, isPendingApproval, navigate]);
 
   const handlePayment = async () => {
     setError('');
@@ -64,78 +68,20 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Check out the first item in the cart (or loop for all, here we buy the first design for simplicity)
+      // Check out the first item in the cart for simplicity
       const designToBuy = cartItems[0];
 
-      // 1. Call backend to create Razorpay Order (no Auth headers needed)
+      // 1. Call backend to create Order tracking session
       const orderRes = await axios.post(
         '/api/payments/create-order',
         { designId: designToBuy.id, email }
       );
 
+      // 2. Open the UPI Checkout UI in the right panel
       const orderData = orderRes.data;
-
-      // 2. If backend reports Mock sandbox mode, display simulator modal
-      if (orderData.isMock) {
-        setMockOrderDetails(orderData);
-        setShowMockModal(true);
-        setLoading(false);
-        return;
-      }
-
-      // 3. Launch Razorpay Standard Payment Gateway Dialog
-      const options = {
-        key: orderData.key_id,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'WEAVING DESIGNS Marketplace',
-        description: `Purchase: ${orderData.design.title}`,
-        image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=100&q=80',
-        order_id: orderData.order_id,
-        handler: async function (response) {
-          setLoading(true);
-          try {
-            // Verify signature on backend
-            const verifyRes = await axios.post(
-              '/api/payments/verify',
-              {
-                order_id: orderData.order_id,
-                payment_id: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-                designId: designToBuy.id
-              }
-            );
-
-            if (verifyRes.data.success) {
-              setSuccess(true);
-              clearCart();
-              triggerAutomaticDownload(designToBuy.id, email);
-            } else {
-              setError('Payment verification failed.');
-            }
-          } catch (err) {
-            setError(err.response?.data?.error || 'Verification request failed.');
-          } finally {
-            setLoading(false);
-          }
-        },
-        prefill: {
-          name: 'Weaving Customer',
-          email: email,
-        },
-        theme: {
-          color: '#0d9488', // Brand Teal
-        },
-        modal: {
-          ondismiss: function () {
-            setError('Payment checkout cancelled by user.');
-            setLoading(false);
-          }
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      setUpiOrderDetails(orderData);
+      setPaymentStep(2);
+      setLoading(false);
 
     } catch (err) {
       console.error('Checkout error:', err);
@@ -144,40 +90,69 @@ export default function CheckoutPage() {
     }
   };
 
-  // Handler for Mock Payment Simulation
-  const simulatePayment = async (status) => {
-    setShowMockModal(false);
-    setLoading(true);
+  const handleCopyUpiId = () => {
+    if (!upiOrderDetails?.upi_id) return;
+    navigator.clipboard.writeText(upiOrderDetails.upi_id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    if (status === 'fail') {
+  // Submit UPI transaction reference ID (UTR)
+  const submitUtr = async (simulatedStatus = null) => {
+    setError('');
+    
+    if (!simulatedStatus) {
+      const utrRegex = /^\d{12}$/;
+      if (!utrRegex.test(utr.trim())) {
+        setError('Please enter a valid 12-digit UPI UTR / Transaction Reference ID.');
+        return;
+      }
+    }
+
+    setSubmittingUtr(true);
+    const designToBuy = cartItems[0];
+    const finalPaymentId = simulatedStatus === 'fail' 
+      ? '' 
+      : simulatedStatus === 'success' 
+        ? `pay_mock_${Math.random().toString(36).substr(2, 9)}`
+        : utr.trim();
+
+    if (simulatedStatus === 'fail') {
       setError('Payment simulation: Transaction failed/cancelled.');
-      setLoading(false);
+      setPaymentStep(1);
+      setSubmittingUtr(false);
       return;
     }
 
     try {
-      // Call backend to verify mock payment
+      // Call backend to verify/register UPI payment reference
       const verifyRes = await axios.post(
         '/api/payments/verify',
         {
-          order_id: mockOrderDetails.order_id,
-          payment_id: `pay_mock_${Math.random().toString(36).substr(2, 9)}`,
-          signature: 'mock_signature',
-          designId: mockOrderDetails.design.id
+          order_id: upiOrderDetails.order_id,
+          payment_id: finalPaymentId,
+          designId: designToBuy.id
         }
       );
 
       if (verifyRes.data.success) {
-        setSuccess(true);
         clearCart();
-        triggerAutomaticDownload(mockOrderDetails.design.id, email);
+        setPaymentStep(1);
+        if (verifyRes.data.download_ready) {
+          // Sandbox mode - auto approved immediately
+          setSuccess(true);
+          triggerAutomaticDownload(designToBuy.id, email);
+        } else {
+          // Live mode - pending admin review
+          setIsPendingApproval(true);
+        }
       } else {
-        setError('Simulation verification failed.');
+        setError('Verification request failed.');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Mock verification request failed.');
     } finally {
-      setLoading(false);
+      setSubmittingUtr(false);
     }
   };
 
@@ -223,25 +198,76 @@ export default function CheckoutPage() {
     );
   }
 
+  if (isPendingApproval) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center animate-fade-in">
+        <div className="inline-flex bg-amber-500/10 text-amber-500 p-4 rounded-full mb-6">
+          <Clock className="animate-pulse" size={48} />
+        </div>
+        <h1 className="font-display font-black text-2xl text-slate-800 dark:text-white">Transaction Submitted</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
+          Your transaction reference (UTR: <strong className="font-mono text-brand-600 dark:text-brand-400">{utr}</strong>) has been submitted for manual approval.
+        </p>
+        <p className="text-slate-400 dark:text-slate-500 mt-4 text-xs max-w-sm mx-auto leading-relaxed">
+          Our admin team will verify the payment against our bank records. Once verified, the design will be unlocked in your Downloads section.
+        </p>
+
+        <div className="mt-8 space-y-3">
+          <Link
+            to="/downloads"
+            className="w-full block bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl shadow-md transition-all text-sm"
+          >
+            Track Download Status
+          </Link>
+          <Link
+            to="/"
+            className="w-full block border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-900 font-semibold py-3 rounded-xl transition-all text-sm"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Generate UPI payload string for the QR code
+  const upiLink = upiOrderDetails
+    ? `upi://pay?pa=${upiOrderDetails.upi_id}&pn=Weaving%20Designs&am=${upiOrderDetails.amount / 100}&cu=INR&tn=${upiOrderDetails.order_id}`
+    : '';
+
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="font-display font-extrabold text-2xl text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-2">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in flex flex-col md:h-[calc(100vh-80px)]">
+      {/* Back Button Option */}
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <Link
+          to="/cart"
+          className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 font-semibold border border-slate-200 dark:border-slate-800 px-3.5 py-1.5 rounded-xl bg-white dark:bg-dark-900 hover:bg-slate-50 hover:border-brand-500 dark:hover:bg-dark-800 dark:hover:border-brand-500/50 transition-all shadow-sm cursor-pointer"
+        >
+          <ChevronLeft size={14} />
+          <span>Back to Cart</span>
+        </Link>
+        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-sans bg-slate-100 dark:bg-dark-900 px-2.5 py-1 rounded-md border border-slate-200/50 dark:border-slate-800">
+          Step 2 of 2: Payment
+        </div>
+      </div>
+
+      <h1 className="font-display font-extrabold text-2xl text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 flex-shrink-0">
         <CreditCard className="text-brand-500" />
         <span>Secure Checkout</span>
       </h1>
 
       {error && (
-        <div className="flex items-center space-x-2 bg-red-500/10 text-red-600 dark:text-red-400 p-4 rounded-xl border border-red-500/20 text-sm mb-6">
+        <div className="flex items-center space-x-2 bg-red-500/10 text-red-650 dark:text-red-400 p-4 rounded-xl border border-red-500/20 text-sm mb-4 font-medium flex-shrink-0">
           <AlertCircle size={18} className="flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch flex-grow overflow-hidden pb-4">
         {/* Left: Summary and details */}
-        <div className="md:col-span-3 space-y-6">
-          <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl">
-            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+        <div className="space-y-4 flex flex-col h-full justify-between">
+          <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl flex-grow overflow-y-auto md:max-h-[calc(100vh-320px)]">
+            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2 sticky top-0 bg-white dark:bg-dark-900 py-1 z-10">
               <ShoppingBag size={18} className="text-brand-500" />
               <span>Purchasing Item</span>
             </h3>
@@ -251,7 +277,7 @@ export default function CheckoutPage() {
                 <img
                   src={item.preview_image_url || item.image_url}
                   alt={item.title}
-                  className="w-12 h-12 object-cover rounded-lg bg-slate-100 dark:bg-dark-950 no-select"
+                  className="w-12 h-12 object-cover rounded-lg bg-slate-100 dark:bg-dark-950 no-select animate-fade-in"
                   onContextMenu={(e) => e.preventDefault()}
                 />
                 <div className="min-w-0 flex-grow">
@@ -263,97 +289,178 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs text-amber-700 dark:text-amber-400 leading-relaxed flex items-start gap-2.5">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs text-amber-700 dark:text-amber-400 leading-relaxed flex items-start gap-2.5 flex-shrink-0">
             <ShieldAlert size={18} className="flex-shrink-0 mt-0.5" />
-            <span>Digital Delivery Notice: Once payment is successful, download permissions are logged instantly. All digital design exports contain color charts and machine configuration specs.</span>
+            <span>Digital Delivery Notice: Once payment is successful and reference is confirmed by our admin team, download permissions are logged instantly. All digital design exports contain color charts and machine config specs.</span>
           </div>
         </div>
 
-        {/* Right: Payment controls */}
-        <div className="md:col-span-2">
-          <div className="glass p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 space-y-6">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 font-bold">
-                Billing Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full px-3 py-2 bg-slate-100/50 dark:bg-dark-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-850 dark:text-slate-200"
-                required
-              />
-            </div>
+        {/* Right: Payment controls (stretched, 50% split) */}
+        <div className="h-full">
+          <div className="glass p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 h-full flex flex-col justify-between overflow-y-auto">
+            {paymentStep === 1 ? (
+              <div className="flex flex-col justify-between h-full">
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 font-bold font-sans">
+                      Billing Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full px-3 py-2 bg-slate-100/50 dark:bg-dark-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-850 dark:text-slate-200"
+                      required
+                    />
+                  </div>
 
-            <div>
-              <span className="text-slate-400 text-xs block uppercase tracking-wider font-bold">Total Payment</span>
-              <strong className="text-slate-900 dark:text-white font-display font-black text-2xl block mt-1">
-                ₹{cartTotal}
-              </strong>
-            </div>
+                  <div>
+                    <span className="text-slate-400 text-xs block uppercase tracking-wider font-bold">Total Payment</span>
+                    <strong className="text-slate-900 dark:text-white font-display font-black text-2xl block mt-1 font-sans">
+                      ₹{cartTotal}
+                    </strong>
+                  </div>
+                </div>
 
-            <button
-              onClick={handlePayment}
-              disabled={loading}
-              className="w-full flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand-600/10 transition-all text-sm"
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-              ) : (
-                <span>Pay Securely with Razorpay</span>
-              )}
-            </button>
+                <div className="pt-6">
+                  <button
+                    onClick={handlePayment}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand-600/10 transition-all text-sm cursor-pointer animate-fade-in"
+                  >
+                    {loading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <QrCode size={18} />
+                        <span>Pay with UPI QR / ID</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Step 2: UPI details directly in the right card
+              <div className="flex flex-col justify-between h-full space-y-4">
+                
+                {/* Header */}
+                <div className="text-center">
+                  <h3 className="font-display font-bold text-base text-slate-900 dark:text-white">Pay Securely via UPI</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Scan the QR code or pay directly to the UPI ID below to buy this design.
+                  </p>
+                </div>
+
+                {/* QR Code Container */}
+                <div className="text-center p-2 bg-slate-550/5 dark:bg-dark-950/20 rounded-xl border border-slate-100 dark:border-slate-850 flex flex-col items-center justify-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=8&data=${encodeURIComponent(upiLink)}`}
+                    alt="UPI QR Code"
+                    className="border-2 border-white rounded-lg shadow bg-white w-[120px] h-[120px] no-select"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                  <span className="block text-[9px] font-bold text-slate-450 dark:text-slate-400 mt-1 font-mono uppercase tracking-wider">
+                    Scan with GPay, PhonePe, Paytm or BHIM
+                  </span>
+                </div>
+
+                {/* UPI Address and Amount */}
+                <div className="grid grid-cols-2 gap-2.5 text-xs">
+                  <div className="py-1.5 px-2.5 bg-slate-550/5 dark:bg-dark-950 rounded-xl border border-slate-150 dark:border-slate-850 flex flex-col justify-center">
+                    <span className="text-[9px] text-slate-400 block mb-0.5">UPI Address:</span>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[10px] select-all truncate">{upiOrderDetails?.upi_id}</span>
+                      <button
+                        onClick={handleCopyUpiId}
+                        className="p-0.5 hover:bg-slate-200 dark:hover:bg-dark-800 rounded text-slate-500 transition-colors flex-shrink-0 ml-1"
+                        title="Copy UPI Address"
+                      >
+                        {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="py-1.5 px-2.5 bg-slate-550/5 dark:bg-dark-950 rounded-xl border border-slate-150 dark:border-slate-850 flex flex-col justify-center">
+                    <span className="text-[9px] text-slate-400 block mb-0.5">Amount Due:</span>
+                    <span className="font-extrabold text-slate-900 dark:text-white text-xs">₹{upiOrderDetails?.amount / 100}</span>
+                  </div>
+                </div>
+
+                {/* UTR Input Form */}
+                <div className="space-y-1">
+                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
+                    Enter 12-digit UPI Transaction Reference / UTR ID
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={utr}
+                    onChange={(e) => setUtr(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 123456789012"
+                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-mono text-center tracking-widest text-slate-800 dark:text-slate-100"
+                    required
+                  />
+                  <p className="text-[8.5px] text-slate-400 dark:text-slate-500 leading-tight">
+                    Make your payment in your UPI app, locate the 12-digit transaction identifier/UTR in payment history, and input it here.
+                  </p>
+                </div>
+
+                {/* Simulation controls */}
+                {upiOrderDetails?.isMock && (
+                  <div className="bg-amber-500/5 border border-amber-500/20 p-2 rounded-xl space-y-1 flex-shrink-0">
+                    <div className="flex justify-between items-center text-[8.5px] font-bold text-amber-600 dark:text-amber-400 uppercase">
+                      <span>🛠️ Sandbox Simulator</span>
+                      <span>(No real funds required)</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => submitUtr('fail')}
+                        className="flex-1 py-1 px-2 bg-slate-100 dark:bg-dark-800 hover:bg-slate-200 text-slate-650 dark:text-slate-250 font-bold rounded-lg text-[8.5px] transition-colors"
+                      >
+                        Simulate Fail
+                      </button>
+                      <button
+                        onClick={() => submitUtr('success')}
+                        className="flex-1 py-1 px-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-650 dark:text-brand-400 font-bold rounded-lg text-[8.5px] border border-brand-500/20 transition-colors"
+                      >
+                        Simulate Auto-Approve
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentStep(1);
+                      setUtr('');
+                    }}
+                    className="flex-1 py-2 px-4 bg-slate-100 dark:bg-dark-800 hover:bg-slate-250 text-slate-750 dark:text-slate-250 font-semibold rounded-xl text-xs transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => submitUtr()}
+                    disabled={submittingUtr || utr.length !== 12}
+                    className="flex-1 py-2 px-4 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-600/40 text-white font-semibold rounded-xl text-xs shadow-md shadow-brand-600/10 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    {submittingUtr ? (
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <span>Submit Reference</span>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Interactive Mock Payment Modal (Sandbox Simulator) */}
-      {showMockModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl max-w-sm w-full shadow-2xl animate-fade-in">
-            <div className="text-center mb-6">
-              <div className="inline-flex bg-brand-500/10 text-brand-500 p-3 rounded-full mb-3">
-                <CreditCard size={32} />
-              </div>
-              <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white">Razorpay Sandbox Simulator</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Simulate payment gateway behavior. No actual funds will be transferred.
-              </p>
-            </div>
-
-            <div className="bg-slate-100 dark:bg-dark-950 p-4 rounded-xl mb-6 text-sm text-left space-y-1.5 border border-slate-200/50 dark:border-slate-800/40">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Design Title:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{mockOrderDetails?.design.title}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Amount:</span>
-                <span className="font-bold text-slate-900 dark:text-white">₹{mockOrderDetails?.amount / 100}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Order ID:</span>
-                <span className="font-mono text-xs text-brand-600 dark:text-brand-400">{mockOrderDetails?.order_id.substring(0, 15)}...</span>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => simulatePayment('fail')}
-                className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-dark-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors"
-              >
-                Cancel / Fail
-              </button>
-              <button
-                onClick={() => simulatePayment('success')}
-                className="flex-1 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-brand-600/10 transition-colors"
-              >
-                Simulate Success
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

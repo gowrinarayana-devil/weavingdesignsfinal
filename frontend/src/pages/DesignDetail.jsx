@@ -213,7 +213,7 @@ export default function DesignDetail() {
             </div>
             <div className="flex items-center space-x-2.5 text-xs text-slate-500">
               <FileText size={16} className="text-brand-500 flex-shrink-0" />
-              <span><strong>Secure payment protection:</strong> Handled securely via Razorpay payment gateway integration.</span>
+              <span><strong>Secure payment protection:</strong> Handled securely via UPI payments with transaction verification.</span>
             </div>
           </div>
 
