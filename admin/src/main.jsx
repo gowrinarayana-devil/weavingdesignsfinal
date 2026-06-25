@@ -5,7 +5,14 @@ import App from './App.jsx'
 import './index.css'
 import axios from 'axios'
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
+let apiURL = import.meta.env.VITE_API_URL || ''
+if (apiURL) {
+  apiURL = apiURL.trim().replace(/\/+$/, '')
+  if (!/^https?:\/\//i.test(apiURL)) {
+    apiURL = `https://${apiURL}`
+  }
+}
+axios.defaults.baseURL = apiURL
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

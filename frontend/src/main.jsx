@@ -8,6 +8,12 @@ import axios from 'axios'
 import { Capacitor } from '@capacitor/core'
 
 let apiURL = import.meta.env.VITE_API_URL || ''
+if (apiURL) {
+  apiURL = apiURL.trim().replace(/\/+$/, '')
+  if (!/^https?:\/\//i.test(apiURL)) {
+    apiURL = `https://${apiURL}`
+  }
+}
 
 if (!apiURL && Capacitor.isNativePlatform()) {
   if (Capacitor.getPlatform() === 'android') {
