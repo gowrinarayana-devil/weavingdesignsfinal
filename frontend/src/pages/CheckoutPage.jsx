@@ -73,13 +73,14 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Check out the first item in the cart for simplicity
-      const designToBuy = cartItems[0];
+      // Collect all design IDs in the cart
+      const designIds = cartItems.map(item => item.id);
+      const designId = designIds[0]; // Fallback for backward compatibility with old deployed backends
 
-      // 1. Call backend to create Order tracking session
+      // 1. Call backend to create Order tracking session for all items
       const orderRes = await axios.post(
         '/api/payments/create-order',
-        { designId: designToBuy.id, email }
+        { designId, designIds, email }
       );
 
       // 2. Open the UPI Checkout UI in the right panel
@@ -115,7 +116,6 @@ export default function CheckoutPage() {
     }
 
     setSubmittingUtr(true);
-    const designToBuy = cartItems[0];
     const finalPaymentId = simulatedStatus === 'fail' 
       ? '' 
       : simulatedStatus === 'success' 
@@ -136,17 +136,22 @@ export default function CheckoutPage() {
         {
           order_id: upiOrderDetails.order_id,
           payment_id: finalPaymentId,
-          designId: designToBuy.id
+          designId: cartItems[0]?.id // Fallback for backward compatibility with old deployed backends
         }
       );
 
       if (verifyRes.data.success) {
+        // Capture items to download before clearing cart
+        const itemsToDownload = [...cartItems];
         clearCart();
         setPaymentStep(1);
         if (verifyRes.data.download_ready) {
           // Sandbox mode - auto approved immediately
           setSuccess(true);
-          triggerAutomaticDownload(designToBuy.id, email);
+          // Trigger automatic download for all items in sequence
+          for (const item of itemsToDownload) {
+            await triggerAutomaticDownload(item.id, email);
+          }
         } else {
           // Live mode - pending admin review
           setIsPendingApproval(true);

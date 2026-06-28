@@ -35,7 +35,8 @@ export default function DownloadsPage() {
           preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80',
           price: 299,
           orderDate: new Date(Date.now() - 3600000).toLocaleDateString(),
-          paymentId: 'pay_mock_39fk29fk29'
+          paymentId: 'pay_mock_39fk29fk29',
+          status: 'success'
         }
       ]);
       setLoading(false);
@@ -68,7 +69,8 @@ export default function DownloadsPage() {
 
       if (data) {
         const formatted = data.map((order) => {
-          const design = order.designs;
+          const design = order.designs ? (Array.isArray(order.designs) ? order.designs[0] : order.designs) : null;
+          if (!design) return null;
           return {
             id: design.id,
             title: design.title,
@@ -79,7 +81,7 @@ export default function DownloadsPage() {
             paymentId: order.payment_id,
             status: order.payment_status
           };
-        });
+        }).filter(Boolean);
         setPurchasedDesigns(formatted);
       }
     } catch (err) {

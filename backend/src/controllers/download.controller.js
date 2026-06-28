@@ -5,7 +5,8 @@ const { supabaseAdmin, isDummy } = require('../config/supabase');
  */
 exports.generateSignedUrl = async (req, res) => {
   try {
-    const { designId, email } = req.body;
+    const designId = req.body.designId || req.body.design_id;
+    const email = req.body.email || req.body.customer_email;
 
     if (!designId) {
       return res.status(400).json({ error: 'Design ID is required.' });

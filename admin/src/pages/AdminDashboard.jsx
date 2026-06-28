@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { DollarSign, ShoppingBag, Users, FileImage, Upload, Plus, CheckCircle2, AlertCircle, Edit, Trash2, X, Clock, Check, XCircle } from 'lucide-react';
+import { LayoutDashboard, DollarSign, ShoppingBag, Users, FileImage, Upload, Plus, CheckCircle2, AlertCircle, Edit, Trash2, X, Clock, Check, XCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { adminToken } = useAuth();
-  
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Upload design form state
   const [title, setTitle] = useState('');
@@ -30,7 +31,7 @@ export default function AdminDashboard() {
   // Manage designs list
   const [designs, setDesigns] = useState([]);
   const [editingDesign, setEditingDesign] = useState(null);
-  
+
   // Edit design form states
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -234,7 +235,7 @@ export default function AdminDashboard() {
       setIsFeatured(false);
       setPreviewFile(null);
       setZipFile(null);
-      
+
       // Refresh stats & list
       fetchStatsAndCategories();
 
@@ -496,12 +497,26 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 animate-fade-in">
-      
-      {/* Page Header */}
-      <div>
-        <h1 className="font-display font-black text-3xl text-slate-800 dark:text-white">Admin Management Center</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Review revenue analytics and upload new weaving assets.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-800 dark:text-slate-100">
+
+      {/* Featured Banner Hero */}
+      <div className="relative rounded-3xl overflow-hidden mb-8 bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 dark:from-brand-950 dark:to-dark-950 p-8 sm:p-10 text-white shadow-lg border border-slate-200/10">
+        <div className="relative z-10 max-w-2xl">
+          <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-brand-500/20 text-brand-300 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3 border border-brand-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-450 animate-pulse"></span>
+            <span>Admin Portal Operations</span>
+          </span>
+          <h1 className="font-display font-black text-3xl sm:text-4xl leading-tight">
+            Weaving Management Center
+          </h1>
+          <p className="text-slate-355 mt-2 text-sm leading-relaxed">
+            Monitor revenue stats, process customer pending UPI payment approvals, and configure weaving assets.
+          </p>
+        </div>
+        {/* Decorative background accent */}
+        <div className="absolute right-0 bottom-0 top-0 w-1/3 opacity-20 hidden md:block">
+          <div className="h-full w-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-brand-400 via-teal-900 to-transparent rounded-full transform scale-150 translate-x-1/4 translate-y-1/4"></div>
+        </div>
       </div>
 
       {/* Messages */}
@@ -552,84 +567,455 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Analytics and Data Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Sales Graph Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6 flex flex-col justify-between">
-          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100">Monthly Revenue Graph (INR)</h3>
-          
-          {stats?.monthlyRevenue ? (
-            <div className="flex items-end justify-between h-48 pt-4 pb-2 px-2 border-b border-slate-150 dark:border-slate-800">
-              {stats.monthlyRevenue.map((data, i) => {
-                const maxVal = Math.max(...stats.monthlyRevenue.map(m => m.sales)) || 1;
-                const pct = (data.sales / maxVal) * 100;
-                return (
-                  <div key={i} className="flex flex-col items-center gap-2 group flex-1">
-                    {/* Tooltip */}
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-200 text-[10px] py-1 px-1.5 rounded font-mono shadow absolute -translate-y-8 select-none">
-                      ₹{data.sales}
-                    </span>
-                    {/* Bar */}
-                    <div
-                      style={{ height: `${Math.max(pct, 5)}%` }}
-                      className="w-8 bg-brand-500 hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 rounded-t-md transition-all duration-500 cursor-pointer shadow-inner"
-                    ></div>
-                    {/* Label */}
-                    <span className="text-xs text-slate-400 font-semibold">{data.month}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="h-48 flex items-center justify-center text-slate-400">Loading graph metrics...</div>
-          )}
-        </div>
-
-        {/* Top Products */}
-        <div className="lg:col-span-1 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-4">
-          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2">Top Selling Patterns</h3>
-          {stats?.topSelling && stats.topSelling.length > 0 ? (
-            <div className="space-y-3">
-              {stats.topSelling.map((prod, idx) => (
-                <div key={prod.id} className="flex justify-between items-center text-sm p-2 hover:bg-slate-50 dark:hover:bg-dark-950 rounded-lg transition-colors">
-                  <div className="min-w-0 pr-2">
-                    <span className="text-xs text-slate-400 font-bold block">RANK {idx + 1}</span>
-                    <strong className="text-slate-700 dark:text-slate-350 truncate block text-xs">{prod.title}</strong>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 px-1.5 py-0.5 rounded font-bold">{prod.salesCount} sales</span>
-                    <span className="block text-slate-500 text-xs font-semibold mt-0.5">₹{prod.revenue}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-slate-400 text-xs">No orders recorded yet.</p>
-          )}
-        </div>
+      {/* Tabs Switcher Bar */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-200/60 dark:border-slate-800/50 pb-4">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'overview'
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
+            : 'bg-slate-100 dark:bg-dark-900 text-slate-650 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/80'
+            }`}
+        >
+          Overview & Analytics
+        </button>
+        <button
+          onClick={() => setActiveTab('upload')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'upload'
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
+            : 'bg-slate-100 dark:bg-dark-900 text-slate-655 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/80'
+            }`}
+        >
+          Upload & Categories
+        </button>
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'orders'
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
+            : 'bg-slate-100 dark:bg-dark-900 text-slate-655 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/80'
+            }`}
+        >
+          Customer Orders & UPI Approvals
+        </button>
+        <button
+          onClick={() => setActiveTab('designs')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'designs'
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
+            : 'bg-slate-100 dark:bg-dark-900 text-slate-655 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/80'
+            }`}
+        >
+          Manage Uploaded Designs
+        </button>
       </div>
 
-      {/* Forms & Configuration Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Upload Design Panel */}
-        <div className="lg:col-span-2 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+      {/* Conditional Active Content Sections */}
+
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Sales Graph Chart */}
+          <div className="lg:col-span-2 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6 flex flex-col justify-between">
+            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100">Monthly Revenue Graph (INR)</h3>
+            {stats?.monthlyRevenue ? (
+              <div className="flex items-end justify-between h-48 pt-4 pb-2 px-2 border-b border-slate-150 dark:border-slate-800">
+                {stats.monthlyRevenue.map((data, i) => {
+                  const maxVal = Math.max(...stats.monthlyRevenue.map(m => m.sales)) || 1;
+                  const pct = (data.sales / maxVal) * 100;
+                  return (
+                    <div key={i} className="flex flex-col items-center gap-2 group flex-1">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-slate-850 text-white dark:text-slate-200 text-[10px] py-1 px-1.5 rounded font-mono shadow absolute -translate-y-8 select-none border border-slate-800/10">
+                        ₹{data.sales}
+                      </span>
+                      <div
+                        style={{ height: `${Math.max(pct, 5)}%` }}
+                        className="w-8 bg-brand-500 hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 rounded-t-md transition-all duration-500 cursor-pointer shadow-inner"
+                      ></div>
+                      <span className="text-xs text-slate-400 font-semibold">{data.month}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-48 flex items-center justify-center text-slate-400">Loading graph metrics...</div>
+            )}
+          </div>
+
+          {/* Top Products */}
+          <div className="lg:col-span-1 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-4">
+            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2">Top Selling Patterns</h3>
+            {stats?.topSelling && stats.topSelling.length > 0 ? (
+              <div className="space-y-3">
+                {stats.topSelling.map((prod, idx) => (
+                  <div key={prod.id} className="flex justify-between items-center text-sm p-2 hover:bg-slate-50 dark:hover:bg-dark-950 rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <div className="min-w-0 pr-2">
+                      <span className="text-xs text-slate-400 font-bold block">RANK {idx + 1}</span>
+                      <strong className="text-slate-700 dark:text-slate-350 truncate block text-xs">{prod.title}</strong>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 px-1.5 py-0.5 rounded font-bold">{prod.salesCount} sales</span>
+                      <span className="block text-slate-500 text-xs font-semibold mt-0.5">₹{prod.revenue}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-400 text-xs">No orders recorded yet.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'upload' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Upload Design Panel */}
+          <div className="lg:col-span-2 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+              <Upload size={18} className="text-brand-500" />
+              <span>Upload New Weaving Design</span>
+            </h3>
+
+            <form onSubmit={handleUploadDesign} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="Royal Peacocks Sleeve Panel"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (INR)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="299"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                  placeholder="Detailed specifications, machine speed targets, stitch sequence notes..."
+                ></textarea>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center pt-5 pl-2">
+                  <input
+                    type="checkbox"
+                    id="isFeatured"
+                    checked={isFeatured}
+                    onChange={(e) => setIsFeatured(e.target.checked)}
+                    className="w-4 h-4 text-brand-600 border-slate-350 rounded focus:ring-brand-500"
+                  />
+                  <label htmlFor="isFeatured" className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
+                    Featured (Best Seller)
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    Preview Image {isDummyClient && '(Optional in Sandbox)'}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPreviewFile(e.target.files[0])}
+                    className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    Original ZIP File {isDummyClient && '(Optional in Sandbox)'}
+                  </label>
+                  <input
+                    type="file"
+                    accept=".zip"
+                    onChange={(e) => setZipFile(e.target.files[0])}
+                    className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={uploading}
+                className="w-full mt-4 flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2.5 rounded-xl shadow-md transition-all text-xs cursor-pointer"
+              >
+                {uploading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                ) : (
+                  <>
+                    <Upload size={14} />
+                    <span>Upload Design Asset</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Add Category */}
+          <div className="lg:col-span-1 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+              <Plus size={18} className="text-brand-500" />
+              <span>Add Category</span>
+            </h3>
+
+            <form onSubmit={handleCreateCategory} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category Name</label>
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                  placeholder="Kurti Sleeve"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
+                <input
+                  type="text"
+                  value={newCategoryDesc}
+                  onChange={(e) => setNewCategoryDesc(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                  placeholder="Sleeve borders for ladies kurtis"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-dark-950 font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Add Category
+              </button>
+            </form>
+
+            {/* Registered Categories list */}
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Categories</label>
+              <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
+                {categories.map((c) => (
+                  <div key={c.id} className="flex justify-between items-center text-xs p-1.5 hover:bg-slate-50 dark:hover:bg-dark-950 rounded text-slate-600 dark:text-slate-400 font-medium border border-transparent border-b-slate-100 dark:border-b-slate-800 last:border-0">
+                    <span>{c.name}</span>
+                    <span className="text-[10px] text-slate-400 italic truncate max-w-[120px]">{c.description || 'No description'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'orders' && (
+        <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
           <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-            <Upload size={18} className="text-brand-500" />
-            <span>Upload New Weaving Design</span>
+            <ShoppingBag size={18} className="text-brand-500" />
+            <span>Customer Orders & UPI Payment Approvals</span>
           </h3>
 
-          <form onSubmit={handleUploadDesign} className="space-y-4">
+          {stats && stats.recentOrders && stats.recentOrders.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="pb-3 pr-4">Order Date</th>
+                    <th className="pb-3 pr-4">Customer Email</th>
+                    <th className="pb-3 pr-4">Design Purchased</th>
+                    <th className="pb-3 pr-4">Amount</th>
+                    <th className="pb-3 pr-4">UPI UTR Ref</th>
+                    <th className="pb-3 pr-4">Status</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
+                  {stats.recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
+                      <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
+                        {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
+                        {order.email}
+                      </td>
+                      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
+                        {order.title}
+                      </td>
+                      <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-350">
+                        ₹{order.amount}
+                      </td>
+                      <td className="py-3 pr-4 font-mono text-xs text-brand-600 dark:text-brand-400 font-semibold">
+                        {order.payment_id ? (
+                          order.payment_id.startsWith('pay_mock_')
+                            ? order.payment_id.split('_').slice(0, 3).join('_')
+                            : order.payment_id.split('_')[0]
+                        ) : (
+                          <span className="text-slate-400 font-sans font-normal italic">No Ref</span>
+                        )}
+                      </td>
+                      <td className="py-3 pr-4 text-xs">
+                        {order.status === 'success' ? (
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold">Approved</span>
+                        ) : order.status === 'pending' ? (
+                          <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded font-bold animate-pulse">Pending Approval</span>
+                        ) : (
+                          <span className="bg-red-500/10 text-red-650 dark:text-red-400 px-2 py-0.5 rounded font-bold">Rejected</span>
+                        )}
+                      </td>
+                      <td className="py-3 text-right space-x-2">
+                        {order.status === 'pending' ? (
+                          <>
+                            <button
+                              onClick={() => handleApproveOrder(order.id, order.email, order.title)}
+                              className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow shadow-emerald-500/10"
+                            >
+                              <Check size={12} />
+                              <span>Approve</span>
+                            </button>
+                            <button
+                              onClick={() => handleRejectOrder(order.id, order.email)}
+                              className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow shadow-red-500/10"
+                            >
+                              <XCircle size={12} />
+                              <span>Reject</span>
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-slate-400 text-xs italic">Completed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 italic">No orders logged in system.</p>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'designs' && (
+        <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+            <FileImage size={18} className="text-brand-500" />
+            <span>Manage Uploaded Designs</span>
+          </h3>
+
+          {designs.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="pb-3 pr-4">Image</th>
+                    <th className="pb-3 pr-4">Design Title</th>
+                    <th className="pb-3 pr-4">Category</th>
+                    <th className="pb-3 pr-4">Price</th>
+                    <th className="pb-3 pr-4">Featured</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
+                  {designs.map((design) => (
+                    <tr key={design.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
+                      <td className="py-3 pr-4">
+                        <img
+                          src={design.preview_image_url}
+                          alt={design.title}
+                          className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
+                        />
+                      </td>
+                      <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
+                        {design.title}
+                      </td>
+                      <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
+                        <span className="bg-slate-100 dark:bg-dark-850 px-2 py-0.5 rounded font-medium text-slate-550">
+                          {design.categories?.name || 'Uncategorized'}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-355">
+                        ₹{design.price}
+                      </td>
+                      <td className="py-3 pr-4 text-xs">
+                        {design.is_featured ? (
+                          <span className="bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded font-bold">Featured</span>
+                        ) : (
+                          <span className="text-slate-400">Standard</span>
+                        )}
+                      </td>
+                      <td className="py-3 text-right space-x-2">
+                        <button
+                          onClick={() => startEdit(design)}
+                          className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <Edit size={12} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDesign(design.id, design.title, design.preview_image_url, design.zip_file_path)}
+                          className="inline-flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-650 dark:text-red-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 italic">No designs have been uploaded to the catalog yet.</p>
+          )}
+        </div>
+      )}
+
+      {/* Edit Design Overlay Modal */}
+      {editingDesign && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 className="font-display font-black text-lg text-slate-900 dark:text-white">Update Weaving Design</h3>
+            <button onClick={cancelEdit} className="p-1.5 hover:bg-slate-100 dark:hover:bg-dark-950 rounded-lg text-slate-400 transition-colors">
+              <X size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={handleUpdateDesign} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  placeholder="Royal Peacocks Sleeve Panel"
                   required
                 />
               </div>
@@ -639,10 +1025,9 @@ export default function AdminDashboard() {
                 <input
                   type="number"
                   min="0"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  placeholder="299"
                   required
                 />
               </div>
@@ -651,11 +1036,10 @@ export default function AdminDashboard() {
             <div>
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
               <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                placeholder="Detailed specifications, machine speed targets, stitch sequence notes..."
               ></textarea>
             </div>
 
@@ -663,8 +1047,8 @@ export default function AdminDashboard() {
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
                 <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
                   required
                 >
@@ -678,12 +1062,12 @@ export default function AdminDashboard() {
               <div className="flex items-center pt-5 pl-2">
                 <input
                   type="checkbox"
-                  id="isFeatured"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  id="editIsFeatured"
+                  checked={editIsFeatured}
+                  onChange={(e) => setEditIsFeatured(e.target.checked)}
                   className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500"
                 />
-                <label htmlFor="isFeatured" className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
+                <label htmlFor="editIsFeatured" className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
                   Featured (Best Seller)
                 </label>
               </div>
@@ -692,381 +1076,55 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Preview Image {isDummyClient && '(Optional in Sandbox)'}
+                  Replace Preview Image (Optional)
                 </label>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setPreviewFile(e.target.files[0])}
+                  onChange={(e) => setEditPreviewFile(e.target.files[0])}
                   className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Original ZIP File {isDummyClient && '(Optional in Sandbox)'}
+                  Replace Original ZIP File (Optional)
                 </label>
                 <input
                   type="file"
                   accept=".zip"
-                  onChange={(e) => setZipFile(e.target.files[0])}
+                  onChange={(e) => setEditZipFile(e.target.files[0])}
                   className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={uploading}
-              className="w-full mt-4 flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2.5 rounded-xl shadow-md transition-all text-xs"
-            >
-              {uploading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-              ) : (
-                <>
-                  <Upload size={14} />
-                  <span>Upload Design Asset</span>
-                </>
-              )}
-            </button>
-          </form>
-        </div>
-
-        {/* Category Setup */}
-        <div className="lg:col-span-1 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
-          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-            <Plus size={18} className="text-brand-500" />
-            <span>Add Category</span>
-          </h3>
-
-          <form onSubmit={handleCreateCategory} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category Name</label>
-              <input
-                type="text"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                placeholder="Kurti Sleeve"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
-              <input
-                type="text"
-                value={newCategoryDesc}
-                onChange={(e) => setNewCategoryDesc(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                placeholder="Sleeve borders for ladies kurtis"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-dark-950 font-semibold py-2 rounded-xl text-xs transition-colors"
-            >
-              Add Category
-            </button>
-          </form>
-
-          {/* Current categories list */}
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Categories</label>
-            <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
-              {categories.map((c) => (
-                <div key={c.id} className="flex justify-between items-center text-xs p-1.5 hover:bg-slate-50 dark:hover:bg-dark-950 rounded text-slate-600 dark:text-slate-400 font-medium border border-transparent border-b-slate-100 dark:border-b-slate-800 last:border-0">
-                  <span>{c.name}</span>
-                  <span className="text-[10px] text-slate-400 italic truncate max-w-[120px]">{c.description || 'No description'}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Customer Orders & UPI Approvals Section */}
-      <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
-        <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-          <ShoppingBag size={18} className="text-brand-500" />
-          <span>Customer Orders & UPI Payment Approvals</span>
-        </h3>
-
-        {stats && stats.recentOrders && stats.recentOrders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="pb-3 pr-4">Order Date</th>
-                  <th className="pb-3 pr-4">Customer Email</th>
-                  <th className="pb-3 pr-4">Design Purchased</th>
-                  <th className="pb-3 pr-4">Amount</th>
-                  <th className="pb-3 pr-4">UPI UTR Ref</th>
-                  <th className="pb-3 pr-4">Status</th>
-                  <th className="pb-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
-                {stats.recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
-                    <td className="py-3 pr-4 text-xs text-slate-500 dark:text-slate-400">
-                      {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
-                      {order.email}
-                    </td>
-                    <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
-                      {order.title}
-                    </td>
-                    <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-350">
-                      ₹{order.amount}
-                    </td>
-                    <td className="py-3 pr-4 font-mono text-xs text-brand-600 dark:text-brand-400 font-semibold">
-                      {order.payment_id || <span className="text-slate-400 font-sans font-normal italic">No Ref</span>}
-                    </td>
-                    <td className="py-3 pr-4 text-xs">
-                      {order.status === 'success' ? (
-                        <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold">Approved</span>
-                      ) : order.status === 'pending' ? (
-                        <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded font-bold animate-pulse">Pending Approval</span>
-                      ) : (
-                        <span className="bg-red-500/10 text-red-650 dark:text-red-400 px-2 py-0.5 rounded font-bold">Rejected</span>
-                      )}
-                    </td>
-                    <td className="py-3 text-right space-x-2">
-                      {order.status === 'pending' ? (
-                        <>
-                          <button
-                            onClick={() => handleApproveOrder(order.id, order.email, order.title)}
-                            className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow shadow-emerald-500/10"
-                          >
-                            <Check size={12} />
-                            <span>Approve</span>
-                          </button>
-                          <button
-                            onClick={() => handleRejectOrder(order.id, order.email)}
-                            className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow shadow-red-500/10"
-                          >
-                            <XCircle size={12} />
-                            <span>Reject</span>
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">Completed</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-slate-400 italic">No orders logged in system.</p>
-        )}
-      </div>
-
-      {/* NEW: Manage Uploaded Designs Section */}
-      <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
-        <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-          <FileImage size={18} className="text-brand-500" />
-          <span>Manage Uploaded Designs</span>
-        </h3>
-
-        {designs.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="pb-3 pr-4">Image</th>
-                  <th className="pb-3 pr-4">Design Title</th>
-                  <th className="pb-3 pr-4">Category</th>
-                  <th className="pb-3 pr-4">Price</th>
-                  <th className="pb-3 pr-4">Featured</th>
-                  <th className="pb-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
-                {designs.map((design) => (
-                  <tr key={design.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
-                    <td className="py-3 pr-4">
-                      <img
-                        src={design.preview_image_url}
-                        alt={design.title}
-                        className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
-                      />
-                    </td>
-                    <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
-                      {design.title}
-                    </td>
-                    <td className="py-3 pr-4 text-xs text-slate-500 dark:text-slate-400">
-                      <span className="bg-slate-100 dark:bg-dark-850 px-2 py-0.5 rounded font-medium text-slate-500">
-                        {design.categories?.name || 'Uncategorized'}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-355">
-                      ₹{design.price}
-                    </td>
-                    <td className="py-3 pr-4 text-xs">
-                      {design.is_featured ? (
-                        <span className="bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded font-bold">Featured</span>
-                      ) : (
-                        <span className="text-slate-400">Standard</span>
-                      )}
-                    </td>
-                    <td className="py-3 text-right space-x-2">
-                      <button
-                        onClick={() => startEdit(design)}
-                        className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        <Edit size={12} />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteDesign(design.id, design.title, design.preview_image_url, design.zip_file_path)}
-                        className="inline-flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-650 dark:text-red-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        <Trash2 size={12} />
-                        <span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-slate-400 italic">No designs have been uploaded to the catalog yet.</p>
-        )}
-      </div>
-
-      {/* Edit Design Overlay Modal */}
-      {editingDesign && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-display font-black text-lg text-slate-900 dark:text-white">Update Weaving Design</h3>
-              <button onClick={cancelEdit} className="p-1.5 hover:bg-slate-100 dark:hover:bg-dark-950 rounded-lg text-slate-400 transition-colors">
-                <X size={20} />
+            <div className="flex gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 justify-end">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={updating}
+                className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                {updating ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                ) : (
+                  <span>Save Changes</span>
+                )}
               </button>
             </div>
-
-            <form onSubmit={handleUpdateDesign} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (INR)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editPrice}
-                    onChange={(e) => setEditPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                ></textarea>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
-                  <select
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center pt-5 pl-2">
-                  <input
-                    type="checkbox"
-                    id="editIsFeatured"
-                    checked={editIsFeatured}
-                    onChange={(e) => setEditIsFeatured(e.target.checked)}
-                    className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500"
-                  />
-                  <label htmlFor="editIsFeatured" className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
-                    Featured (Best Seller)
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Replace Preview Image (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setEditPreviewFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Replace Original ZIP File (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".zip"
-                    onChange={(e) => setEditZipFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 justify-end">
-                <button
-                  type="button"
-                  onClick={cancelEdit}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={updating}
-                  className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  {updating ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                  ) : (
-                    <span>Save Changes</span>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+          </form>
         </div>
-      )}
+      </div>
+    )
+  }
 
-    </div>
+    </div >
   );
 }

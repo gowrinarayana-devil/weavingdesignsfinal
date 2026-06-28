@@ -7,53 +7,56 @@ const { isDummyRazorpay } = require('../config/razorpay');
  */
 exports.createOrder = async (req, res) => {
   try {
-    const { designId, email } = req.body;
+    const { designId, designIds, email } = req.body;
 
-    if (!designId) {
-      return res.status(400).json({ error: 'Design ID is required.' });
+    if (!designId && (!designIds || designIds.length === 0)) {
+      return res.status(400).json({ error: 'Design ID(s) are required.' });
     }
     if (!email) {
       return res.status(400).json({ error: 'Customer email is required.' });
     }
 
+    const ids = designIds && designIds.length > 0 ? designIds : [designId];
+
     // Retrieve design details from database
-    let design;
+    let designs = [];
     if (isDummy) {
-      // Return a mock design if database isn't connected
-      design = { id: designId, title: 'Sample Embroidery Design', price: 299.00 };
+      // Return mock designs if database isn't connected
+      designs = ids.map(id => ({ id, title: 'Sample Embroidery Design', price: 299.00 }));
     } else {
       const { data, error } = await supabaseAdmin
         .from('designs')
         .select('id, title, price')
-        .eq('id', designId)
-        .single();
+        .in('id', ids);
 
-      if (error || !data) {
-        return res.status(404).json({ error: 'Design not found.' });
+      if (error || !data || data.length === 0) {
+        return res.status(404).json({ error: 'Designs not found in system.' });
       }
-      design = data;
+      designs = data;
     }
 
-    const price = parseFloat(design.price);
-    const amountInPaise = Math.round(price * 100);
+    const totalPrice = designs.reduce((sum, d) => sum + parseFloat(d.price), 0);
+    const amountInPaise = Math.round(totalPrice * 100);
     const upiId = process.env.UPI_ID || '9052572363@ybl';
     const orderId = `order_upi_${crypto.randomBytes(6).toString('hex')}`;
 
-    // Store pending order in Supabase
+    // Store pending orders in Supabase
     if (!isDummy) {
+      const orderRows = designs.map(d => ({
+        customer_email: email,
+        design_id: d.id,
+        payment_id: null,
+        order_id: orderId,
+        amount: parseFloat(d.price),
+        payment_status: 'pending'
+      }));
+
       const { error: insertErr } = await supabaseAdmin
         .from('orders')
-        .insert({
-          customer_email: email,
-          design_id: design.id,
-          payment_id: null,
-          order_id: orderId,
-          amount: price,
-          payment_status: 'pending'
-        });
+        .insert(orderRows);
 
       if (insertErr) {
-        console.error('Failed to create pending order:', insertErr);
+        console.error('Failed to create pending orders:', insertErr);
         return res.status(500).json({ error: 'Failed to record purchase order.' });
       }
     }
@@ -65,7 +68,7 @@ exports.createOrder = async (req, res) => {
       currency: 'INR',
       order_id: orderId,
       upi_id: upiId,
-      design: { id: design.id, title: design.title }
+      designs: designs.map(d => ({ id: d.id, title: d.title }))
     });
 
   } catch (err) {
@@ -79,9 +82,9 @@ exports.createOrder = async (req, res) => {
  */
 exports.verifyPayment = async (req, res) => {
   try {
-    const { order_id, payment_id, designId } = req.body; // payment_id will contain the user entered UTR
+    const { order_id, payment_id } = req.body; // payment_id will contain the user entered UTR
 
-    if (!order_id || !designId) {
+    if (!order_id) {
       return res.status(400).json({ error: 'Missing required parameters.' });
     }
 
@@ -92,18 +95,24 @@ exports.verifyPayment = async (req, res) => {
     // 1. Handle Dummy/Mock verification or auto-approval in sandbox mode
     if (isDummyRazorpay || order_id.startsWith('order_mock_')) {
       if (!isDummy) {
-        // Find order and update to success
-        const { error: updateErr } = await supabaseAdmin
+        // Query to see how many rows exist for this order_id
+        const { data: orderRows } = await supabaseAdmin
           .from('orders')
-          .update({
-            payment_status: 'success',
-            payment_id: payment_id
-          })
+          .select('id, design_id')
           .eq('order_id', order_id);
 
-        if (updateErr) {
-          console.error('Failed to update order status:', updateErr);
-          return res.status(500).json({ error: 'Failed to process order completion.' });
+        if (orderRows && orderRows.length > 0) {
+          for (const row of orderRows) {
+            // Append design_id suffix if multiple rows exist to avoid unique constraint key violations
+            const finalUtr = orderRows.length > 1 ? `${payment_id}_${row.design_id}` : payment_id;
+            await supabaseAdmin
+              .from('orders')
+              .update({
+                payment_status: 'success',
+                payment_id: finalUtr
+              })
+              .eq('id', row.id);
+          }
         }
       }
 
@@ -121,17 +130,30 @@ exports.verifyPayment = async (req, res) => {
     }
 
     if (!isDummy) {
-      const { error: updateErr } = await supabaseAdmin
+      // Query to see how many rows exist for this order_id
+      const { data: orderRows, error: fetchErr } = await supabaseAdmin
         .from('orders')
-        .update({
-          payment_id: payment_id,
-          payment_status: 'success'
-        })
+        .select('id, design_id')
         .eq('order_id', order_id);
 
-      if (updateErr) {
-        console.error('Failed to register payment UTR:', updateErr);
-        return res.status(500).json({ error: 'Failed to process transaction completion.' });
+      if (fetchErr || !orderRows || orderRows.length === 0) {
+        return res.status(404).json({ error: 'Order details not found.' });
+      }
+
+      for (const row of orderRows) {
+        const finalUtr = orderRows.length > 1 ? `${payment_id}_${row.design_id}` : payment_id;
+        const { error: updateErr } = await supabaseAdmin
+          .from('orders')
+          .update({
+            payment_id: finalUtr,
+            payment_status: 'success'
+          })
+          .eq('id', row.id);
+
+        if (updateErr) {
+          console.error('Failed to register payment UTR:', updateErr);
+          return res.status(500).json({ error: 'Failed to process transaction completion.' });
+        }
       }
     }
 
