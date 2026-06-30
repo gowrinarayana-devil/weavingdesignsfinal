@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [ordersSubTab, setOrdersSubTab] = useState('pending');
 
   // Upload design form state
   const [title, setTitle] = useState('');
@@ -41,6 +42,12 @@ export default function AdminDashboard() {
   const [editPreviewFile, setEditPreviewFile] = useState(null);
   const [editZipFile, setEditZipFile] = useState(null);
   const [updating, setUpdating] = useState(false);
+
+  const filteredOrders = stats?.recentOrders?.filter((order) => {
+    if (ordersSubTab === 'pending') return order.status === 'pending';
+    if (ordersSubTab === 'approved') return order.status === 'success';
+    return order.status === 'failed'; // rejected
+  }) || [];
 
   const fetchStatsAndCategories = async () => {
     setLoading(true);
@@ -836,12 +843,48 @@ export default function AdminDashboard() {
 
       {activeTab === 'orders' && (
         <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
-          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-            <ShoppingBag size={18} className="text-brand-500" />
-            <span>Customer Orders & UPI Payment Approvals</span>
-          </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+              <ShoppingBag size={18} className="text-brand-500" />
+              <span>Customer Orders & UPI Payment Approvals</span>
+            </h3>
 
-          {stats && stats.recentOrders && stats.recentOrders.length > 0 ? (
+            {/* Sub-tab Switcher */}
+            <div className="flex gap-2 bg-slate-50 dark:bg-dark-950 p-1 rounded-xl border border-slate-200/60 dark:border-slate-800/80">
+              <button
+                onClick={() => setOrdersSubTab('pending')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  ordersSubTab === 'pending'
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                Pending ({stats?.recentOrders?.filter(o => o.status === 'pending').length || 0})
+              </button>
+              <button
+                onClick={() => setOrdersSubTab('approved')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  ordersSubTab === 'approved'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                Approved ({stats?.recentOrders?.filter(o => o.status === 'success').length || 0})
+              </button>
+              <button
+                onClick={() => setOrdersSubTab('rejected')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  ordersSubTab === 'rejected'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                Rejected ({stats?.recentOrders?.filter(o => o.status === 'failed').length || 0})
+              </button>
+            </div>
+          </div>
+
+          {filteredOrders.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -856,7 +899,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
-                  {stats.recentOrders.map((order) => (
+                  {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
                       <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
                         {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -916,7 +959,7 @@ export default function AdminDashboard() {
               </table>
             </div>
           ) : (
-            <p className="text-sm text-slate-400 italic">No orders logged in system.</p>
+            <p className="text-sm text-slate-450 dark:text-slate-400 italic">No {ordersSubTab} orders found.</p>
           )}
         </div>
       )}
