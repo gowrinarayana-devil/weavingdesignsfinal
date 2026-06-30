@@ -1,12 +1,9 @@
 {
   "cleanUrls": true,
-  "routes": [
+  "rewrites": [
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!assets/|favicon.ico|logo.jpg|build-test.txt).*)",
+      "destination": "/index.html"
     }
   ]
 }
