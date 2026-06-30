@@ -91,9 +91,8 @@ export default function DesignDetail() {
 
   const handleBuyNow = () => {
     if (!design) return;
-    // Add to cart and redirect straight to Checkout
-    addToCart(design);
-    navigate('/checkout');
+    // Redirect straight to Checkout, passing the single design in location state
+    navigate('/checkout', { state: { directBuyItem: design } });
   };
 
   if (loading) {

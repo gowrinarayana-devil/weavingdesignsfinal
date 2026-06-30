@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
@@ -11,6 +11,11 @@ export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const directBuyItem = location.state?.directBuyItem;
+  const checkoutItems = directBuyItem ? [directBuyItem] : cartItems;
+  const checkoutTotal = directBuyItem ? directBuyItem.price : cartTotal;
 
   const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
@@ -60,11 +65,11 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
-    // Redirect if cart is empty and checkout hasn't succeeded
-    if (cartItems.length === 0 && !success && !isPendingApproval) {
+    // Redirect if checkout items list is empty and checkout hasn't succeeded
+    if (checkoutItems.length === 0 && !success && !isPendingApproval) {
       navigate('/cart');
     }
-  }, [cartItems, success, isPendingApproval, navigate]);
+  }, [checkoutItems, success, isPendingApproval, navigate]);
 
   const handlePayment = async () => {
     setError('');
@@ -77,8 +82,8 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Collect all design IDs in the cart
-      const designIds = cartItems.map(item => item.id);
+      // Collect all design IDs in the purchase
+      const designIds = checkoutItems.map(item => item.id);
       const designId = designIds[0]; // Fallback for backward compatibility with old deployed backends
 
       // 1. Call backend to create Order tracking session for all items
@@ -144,15 +149,17 @@ export default function CheckoutPage() {
         {
           order_id: upiOrderDetails.order_id,
           payment_id: finalPaymentId,
-          designId: cartItems[0]?.id // Fallback for backward compatibility with old deployed backends
+          designId: checkoutItems[0]?.id // Fallback for backward compatibility with old deployed backends
         }
       );
 
       if (verifyRes.data.success) {
         // Capture items to download before clearing cart
-        const itemsToDownload = [...cartItems];
+        const itemsToDownload = [...checkoutItems];
         setPurchasedItems(itemsToDownload);
-        clearCart();
+        if (!directBuyItem) {
+          clearCart();
+        }
         setPaymentStep(1);
         if (verifyRes.data.download_ready) {
           // Sandbox mode - auto approved immediately
@@ -397,7 +404,7 @@ export default function CheckoutPage() {
               <span>Purchasing Item</span>
             </h3>
             
-            {cartItems.map((item) => (
+            {checkoutItems.map((item) => (
               <div key={item.id} className="flex gap-4 py-3 border-b border-slate-100 dark:border-slate-800/50 last:border-0 last:pb-0">
                 <img
                   src={item.preview_image_url || item.image_url}
@@ -443,7 +450,7 @@ export default function CheckoutPage() {
                   <div>
                     <span className="text-slate-400 text-xs block uppercase tracking-wider font-bold">Total Payment</span>
                     <strong className="text-slate-900 dark:text-white font-display font-black text-2xl block mt-1 font-sans">
-                      ₹{cartTotal}
+                      ₹{checkoutTotal}
                     </strong>
                   </div>
                 </div>
