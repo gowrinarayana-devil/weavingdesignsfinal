@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/((?!assets/|favicon.ico|logo.jpg|build-test.txt).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
