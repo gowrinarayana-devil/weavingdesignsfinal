@@ -28,13 +28,22 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const getMarketplaceUrl = () => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+      }
+    }
+    return import.meta.env.VITE_MARKETPLACE_URL || 'https://weavingdesignsfinal-n5uj.vercel.app';
+  };
+
   return (
     <nav className="sticky top-0 z-40 glass w-full transition-colors border-b border-slate-200/50 dark:border-slate-800/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo Brand */}
           <div className="flex items-center">
-            <a href="http://localhost:3000" className="flex items-center space-x-2">
+            <a href={getMarketplaceUrl()} className="flex items-center space-x-2">
               <img src="/logo.jpg" alt="WEAVING DESIGNS Logo" className="w-10 h-10 object-cover rounded-lg shadow-md border border-slate-200/50 dark:border-slate-800/40" />
               <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-600 to-brand-500 dark:from-brand-500 dark:to-teal-300 bg-clip-text text-transparent">
                 WEAVING DESIGNS <span className="text-xs font-semibold px-2 py-0.5 bg-slate-200/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-350 rounded border border-slate-200 dark:border-slate-700 ml-2">Admin Panel</span>

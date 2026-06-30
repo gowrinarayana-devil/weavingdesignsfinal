@@ -20,7 +20,12 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <p>&copy; {new Date().getFullYear()} WEAVING DESIGNS. All rights reserved.</p>
           <div className="flex space-x-6">
-            <a href="http://localhost:3000" className="hover:text-brand-500 transition-colors">Marketplace</a>
+            <a 
+              href={typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3000' : (import.meta.env.VITE_MARKETPLACE_URL || 'https://weavingdesignsfinal-n5uj.vercel.app')} 
+              className="hover:text-brand-500 transition-colors"
+            >
+              Marketplace
+            </a>
             <span className="text-slate-400">Admin Session Secured</span>
           </div>
         </div>
