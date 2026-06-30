@@ -132,28 +132,57 @@ export default function DownloadsPage() {
         <span>My Purchased Designs</span>
       </h1>
 
-      {/* Email Search Box */}
-      <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl mb-8 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-350 mb-3 flex items-center gap-1.5">
-          <Search size={16} className="text-brand-500" />
-          <span>Enter the email address you used during checkout to access your files:</span>
-        </h3>
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="billing-email@example.com"
-            className="flex-grow px-4 py-2.5 bg-slate-100/50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-800 dark:text-slate-250"
-            required
-          />
-          <button
-            type="submit"
-            className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-1.5"
+      {/* Search and Custom Request Panels */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Email Search Box */}
+        <div className="md:col-span-2 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-350 mb-2 flex items-center gap-1.5">
+              <Search size={16} className="text-brand-500" />
+              <span>Access Purchased Designs</span>
+            </h3>
+            <p className="text-xs text-slate-400 mb-4 leading-normal">
+              Enter the email address you used during checkout to retrieve and download your purchased design files.
+            </p>
+          </div>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="billing-email@example.com"
+              className="flex-grow px-4 py-2.5 bg-slate-100/50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-800 dark:text-slate-250"
+              required
+            />
+            <button
+              type="submit"
+              className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>Access Downloads</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Custom Design / Support Box */}
+        <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-350 mb-2 flex items-center gap-1.5">
+              <span className="text-brand-500">🎨</span>
+              <span>Custom Design Support</span>
+            </h3>
+            <p className="text-xs text-slate-400 mb-4 leading-normal">
+              Need a custom layout, sizing adjustment, or want to create a brand new design? Tap below to chat.
+            </p>
+          </div>
+          <a
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520want%2520to%2520request%2520a%2520custom%2520weaving%2520design."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-dark-850 dark:hover:bg-dark-800 text-slate-800 dark:text-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center flex items-center justify-center gap-1.5 border border-slate-200/30 dark:border-slate-800/80 cursor-pointer"
           >
-            <span>Access Downloads</span>
-          </button>
-        </form>
+            Create My Own Design
+          </a>
+        </div>
       </div>
 
       {error && (

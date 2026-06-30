@@ -48,6 +48,15 @@ export default function Navbar() {
               <span>My Downloads</span>
             </Link>
 
+            <a
+              href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520want%2520to%2520request%2520a%2520custom%2520weaving%2520design."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Make My Own Design</span>
+            </a>
+
             {/* Vertical Separator */}
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
 
@@ -98,6 +107,17 @@ export default function Navbar() {
           <Link to="/downloads" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-dark-900 transition-colors">
             My Downloads
           </Link>
+          <div className="pt-2">
+            <a
+              href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520want%2520to%2520request%2520a%2520custom%2520weaving%2520design."
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              className="block w-full text-center bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow"
+            >
+              Make My Own Design
+            </a>
+          </div>
         </div>
       )}
     </nav>

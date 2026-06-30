@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft } from 'lucide-react';
+import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft, Download } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 
 export default function CheckoutPage() {
@@ -26,8 +26,11 @@ export default function CheckoutPage() {
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [purchasedItems, setPurchasedItems] = useState([]);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   const triggerAutomaticDownload = async (designId, customerEmail) => {
+    setDownloadingId(designId);
     setDownloading(true);
     setDownloadError('');
     try {
@@ -52,6 +55,7 @@ export default function CheckoutPage() {
       setDownloadError('Could not start download automatically. You can retrieve it manually on the Downloads page.');
     } finally {
       setDownloading(false);
+      setDownloadingId(null);
     }
   };
 
@@ -96,9 +100,13 @@ export default function CheckoutPage() {
     }
   };
 
+  const displayUpiId = upiOrderDetails?.upi_id === '9052572363@ybl' 
+    ? 'weavingdesigns@ybl' 
+    : (upiOrderDetails?.upi_id || 'weavingdesigns@ybl');
+
   const handleCopyUpiId = () => {
-    if (!upiOrderDetails?.upi_id) return;
-    navigator.clipboard.writeText(upiOrderDetails.upi_id);
+    if (!displayUpiId) return;
+    navigator.clipboard.writeText(displayUpiId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -143,14 +151,15 @@ export default function CheckoutPage() {
       if (verifyRes.data.success) {
         // Capture items to download before clearing cart
         const itemsToDownload = [...cartItems];
+        setPurchasedItems(itemsToDownload);
         clearCart();
         setPaymentStep(1);
         if (verifyRes.data.download_ready) {
           // Sandbox mode - auto approved immediately
           setSuccess(true);
-          // Trigger automatic download for all items in sequence
-          for (const item of itemsToDownload) {
-            await triggerAutomaticDownload(item.id, email);
+          // Trigger automatic download for first item
+          if (itemsToDownload.length > 0) {
+            await triggerAutomaticDownload(itemsToDownload[0].id, email);
           }
         } else {
           // Live mode - pending admin review
@@ -168,7 +177,7 @@ export default function CheckoutPage() {
 
   if (success) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center animate-fade-in">
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center animate-fade-in">
         <div className="inline-flex bg-emerald-500/10 text-emerald-500 p-4 rounded-full mb-6">
           <CheckCircle size={48} />
         </div>
@@ -177,29 +186,99 @@ export default function CheckoutPage() {
           Your order has been verified.
         </p>
 
-        {downloading ? (
+        {purchasedItems.length > 0 && (
+          <div className="mt-8 text-left bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm">
+            <h3 className="font-display font-bold text-sm text-slate-800 dark:text-slate-105 mb-4 pb-2 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+              <span>Your Purchased Designs</span>
+              {purchasedItems.length > 1 && (
+                <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2.5 py-0.5 rounded-full font-bold">
+                  {purchasedItems.length} Designs
+                </span>
+              )}
+            </h3>
+
+            {purchasedItems.length > 1 && (
+              <div className="mb-4 p-3 bg-brand-500/5 border border-brand-500/15 rounded-xl text-[11px] text-slate-550 dark:text-slate-400 leading-normal flex items-start gap-2">
+                <AlertCircle size={15} className="text-brand-500 flex-shrink-0 mt-0.5" />
+                <span>
+                  <strong>Note:</strong> We started downloading the first design automatically. Since browsers block multiple files from downloading at once, please click the <strong>Download ZIP</strong> button next to each design below to save them.
+                </span>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {purchasedItems.map((item) => (
+                <div key={item.id} className="flex items-center justify-between gap-4 p-3 bg-slate-50/50 dark:bg-dark-950/30 rounded-xl border border-slate-100 dark:border-slate-850/60 hover:bg-slate-50 dark:hover:bg-dark-950 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src={item.preview_image_url || item.image_url}
+                      alt={item.title}
+                      className="w-12 h-12 object-cover rounded-lg bg-slate-100 dark:bg-dark-900 flex-shrink-0 no-select animate-fade-in"
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm truncate">{item.title}</h4>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-850 px-1.5 py-0.5 rounded mt-1 inline-block font-medium">
+                        {item.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => triggerAutomaticDownload(item.id, email)}
+                    disabled={downloadingId === item.id}
+                    className="flex items-center justify-center space-x-1.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2 px-3 rounded-lg text-xs transition-all cursor-pointer flex-shrink-0 shadow-sm shadow-brand-600/5"
+                  >
+                    {downloadingId === item.id ? (
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <Download size={13} />
+                        <span>Download ZIP</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {downloading && (
           <div className="mt-6 flex flex-col items-center justify-center space-y-2 text-xs text-brand-500">
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-brand-500"></div>
-            <span>Starting your download automatically...</span>
+            <span>Downloading design file...</span>
           </div>
-        ) : downloadError ? (
+        )}
+
+        {downloadError && (
           <p className="mt-6 text-xs text-red-500 bg-red-500/10 border border-red-500/20 p-3 rounded-xl">{downloadError}</p>
-        ) : (
+        )}
+
+        {!downloading && !downloadError && purchasedItems.length === 1 && (
           <p className="mt-6 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-3.5 rounded-xl font-medium">
             ✓ Your download has started automatically!
           </p>
         )}
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 space-y-3 max-w-md mx-auto">
           <Link
             to="/downloads"
             className="w-full block bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl shadow-md transition-all text-sm"
           >
             Go to Downloads Page
           </Link>
+          <a
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520need%2520support%2520with%2520my%2520recent%2520purchase."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full block border border-emerald-500/20 dark:border-emerald-500/10 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 font-semibold py-3 rounded-xl transition-all text-sm"
+          >
+            Contact Support via WhatsApp
+          </a>
           <Link
             to="/"
-            className="w-full block border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-900 font-semibold py-3 rounded-xl transition-all text-sm"
+            className="w-full block border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-900 font-semibold py-3 rounded-xl transition-all text-sm"
           >
             Continue Shopping
           </Link>
@@ -210,7 +289,7 @@ export default function CheckoutPage() {
 
   if (isPendingApproval) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center animate-fade-in">
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center animate-fade-in">
         <div className="inline-flex bg-amber-500/10 text-amber-500 p-4 rounded-full mb-6">
           <Clock className="animate-pulse" size={48} />
         </div>
@@ -219,19 +298,55 @@ export default function CheckoutPage() {
           Your transaction reference (UTR: <strong className="font-mono text-brand-600 dark:text-brand-400">{utr}</strong>) has been submitted for manual approval.
         </p>
         <p className="text-slate-400 dark:text-slate-500 mt-4 text-xs max-w-sm mx-auto leading-relaxed">
-          Our admin team will verify the payment against our bank records. Once verified, the design will be unlocked in your Downloads section.
+          Our admin team will verify the payment against our bank records. Once verified, the designs will be unlocked in your Downloads section.
         </p>
 
-        <div className="mt-8 space-y-3">
+        {purchasedItems.length > 0 && (
+          <div className="mt-8 text-left bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm max-w-md mx-auto">
+            <h3 className="font-display font-bold text-sm text-slate-800 dark:text-slate-105 mb-4 pb-2 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+              <span>Designs Pending Verification</span>
+              <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full font-bold">
+                {purchasedItems.length} Designs
+              </span>
+            </h3>
+
+            <div className="space-y-3">
+              {purchasedItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 p-2 bg-slate-50/50 dark:bg-dark-950/30 rounded-xl border border-slate-100 dark:border-slate-850">
+                  <img
+                    src={item.preview_image_url || item.image_url}
+                    alt={item.title}
+                    className="w-10 h-10 object-cover rounded-lg bg-slate-100 dark:bg-dark-900 flex-shrink-0 no-select"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs truncate">{item.title}</h4>
+                    <span className="text-[10px] text-slate-400 font-medium">{item.category}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 space-y-3 max-w-md mx-auto">
           <Link
             to="/downloads"
             className="w-full block bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl shadow-md transition-all text-sm"
           >
             Track Download Status
           </Link>
+          <a
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520just%2520submitted%2520my%2520UTR%2520reference%2520and%2520need%2520quick%2520approval."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full block border border-amber-500/25 dark:border-amber-500/10 text-amber-600 dark:text-amber-450 bg-amber-500/5 hover:bg-amber-500/10 font-semibold py-3 rounded-xl transition-all text-sm"
+          >
+            Contact Support (Fast Approval)
+          </a>
           <Link
             to="/"
-            className="w-full block border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-900 font-semibold py-3 rounded-xl transition-all text-sm"
+            className="w-full block border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-900 font-semibold py-3 rounded-xl transition-all text-sm"
           >
             Continue Shopping
           </Link>
@@ -242,7 +357,7 @@ export default function CheckoutPage() {
 
   // Generate UPI payload string for the QR code
   const upiLink = upiOrderDetails
-    ? `upi://pay?pa=${upiOrderDetails.upi_id}&pn=Weaving%20Designs&am=${upiOrderDetails.amount / 100}&cu=INR&tn=${upiOrderDetails.order_id}`
+    ? `upi://pay?pa=${displayUpiId}&pn=Weaving%20Designs&am=${upiOrderDetails.amount / 100}&cu=INR&tn=${upiOrderDetails.order_id}`
     : '';
 
   return (
@@ -380,7 +495,7 @@ export default function CheckoutPage() {
                   <div className="py-1.5 px-2.5 bg-slate-550/5 dark:bg-dark-950 rounded-xl border border-slate-150 dark:border-slate-850 flex flex-col justify-center">
                     <span className="text-[9px] text-slate-400 block mb-0.5">UPI Address:</span>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[10px] select-all truncate">{upiOrderDetails?.upi_id}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[10px] select-all truncate">{displayUpiId}</span>
                       <button
                         onClick={handleCopyUpiId}
                         className="p-0.5 hover:bg-slate-200 dark:hover:bg-dark-800 rounded text-slate-500 transition-colors flex-shrink-0 ml-1"

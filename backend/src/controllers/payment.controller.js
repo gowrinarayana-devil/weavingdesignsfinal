@@ -37,7 +37,7 @@ exports.createOrder = async (req, res) => {
 
     const totalPrice = designs.reduce((sum, d) => sum + parseFloat(d.price), 0);
     const amountInPaise = Math.round(totalPrice * 100);
-    const upiId = process.env.UPI_ID || '9052572363@ybl';
+    const upiId = process.env.UPI_ID || 'weavingdesigns@ybl';
     const orderId = `order_upi_${crypto.randomBytes(6).toString('hex')}`;
 
     // Store pending orders in Supabase
