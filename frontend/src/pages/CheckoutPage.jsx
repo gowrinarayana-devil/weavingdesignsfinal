@@ -276,7 +276,7 @@ export default function CheckoutPage() {
             Go to Downloads Page
           </Link>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520need%2520support%2520with%2520my%2520recent%2520purchase."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support%20with%20my%20recent%20purchase."
             target="_blank"
             rel="noopener noreferrer"
             className="w-full block border border-emerald-500/20 dark:border-emerald-500/10 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 font-semibold py-3 rounded-xl transition-all text-sm"
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
             Track Download Status
           </Link>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520just%2520submitted%2520my%2520UTR%2520reference%2520and%2520need%2520quick%2520approval."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20just%20submitted%20my%20UTR%20reference%20and%20need%20quick%20approval."
             target="_blank"
             rel="noopener noreferrer"
             className="w-full block border border-amber-500/25 dark:border-amber-500/10 text-amber-600 dark:text-amber-450 bg-amber-500/5 hover:bg-amber-500/10 font-semibold py-3 rounded-xl transition-all text-sm"

@@ -49,7 +49,7 @@ export default function Navbar() {
             </Link>
 
             <a
-              href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520want%2520to%2520request%2520a%2520custom%2520weaving%2520design."
+              href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20want%20to%20request%20a%20custom%20weaving%20design."
               target="_blank"
               rel="noopener noreferrer"
               className="bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer"
@@ -109,7 +109,7 @@ export default function Navbar() {
           </Link>
           <div className="pt-2">
             <a
-              href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520want%2520to%2520request%2520a%2520custom%2520weaving%2520design."
+              href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20want%20to%20request%20a%20custom%20weaving%20design."
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setIsOpen(false)}

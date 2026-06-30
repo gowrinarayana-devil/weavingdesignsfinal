@@ -175,7 +175,7 @@ export default function DownloadsPage() {
             </p>
           </div>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520want%2520to%2520request%2520a%2520custom%2520weaving%2520design."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20want%20to%20request%20a%20custom%20weaving%20design."
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-dark-850 dark:hover:bg-dark-800 text-slate-800 dark:text-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center flex items-center justify-center gap-1.5 border border-slate-200/30 dark:border-slate-800/80 cursor-pointer"

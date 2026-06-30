@@ -35,7 +35,7 @@ export default function App() {
 
           {/* Floating WhatsApp Support Button */}
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs%2C%2520I%2520need%2520support."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support."
             target="_blank"
             rel="noopener noreferrer"
             className="fixed bottom-6 right-6 z-50 bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100 p-2.5 rounded-full shadow-2xl border border-slate-200/50 dark:border-slate-800/80 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group hover:border-[#25D366] dark:hover:border-[#25D366] cursor-pointer"
