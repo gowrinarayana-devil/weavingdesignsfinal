@@ -1,8 +1,9 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
+import { App as CapacitorApp } from '@capacitor/app';
 
 // Pages
 import Marketplace from './pages/Marketplace';
@@ -13,6 +14,35 @@ import DownloadsPage from './pages/DownloadsPage';
 
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    let backButtonListener;
+
+    const setupListener = async () => {
+      try {
+        backButtonListener = await CapacitorApp.addListener('backButton', () => {
+          if (location.pathname === '/' || location.pathname === '/marketplace') {
+            CapacitorApp.exitApp();
+          } else {
+            navigate(-1);
+          }
+        });
+      } catch (err) {
+        console.log('Capacitor App listener not active (browser environment)');
+      }
+    };
+
+    setupListener();
+
+    return () => {
+      if (backButtonListener) {
+        backButtonListener.remove();
+      }
+    };
+  }, [location, navigate]);
+
   return (
     <AuthProvider>
       <CartProvider>
