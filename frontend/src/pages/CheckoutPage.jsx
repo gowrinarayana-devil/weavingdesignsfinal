@@ -396,9 +396,9 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch flex-grow overflow-hidden pb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch flex-grow md:overflow-hidden pb-4">
         {/* Left: Summary and details */}
-        <div className="space-y-4 flex flex-col h-full justify-between">
+        <div className="space-y-4 flex flex-col md:h-full justify-between">
           <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl flex-grow overflow-y-auto md:max-h-[calc(100vh-320px)]">
             <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2 sticky top-0 bg-white dark:bg-dark-900 py-1 z-10">
               <ShoppingBag size={18} className="text-brand-500" />
@@ -429,10 +429,10 @@ export default function CheckoutPage() {
         </div>
 
         {/* Right: Payment controls (stretched, 50% split) */}
-        <div className="h-full">
+        <div className="md:h-full">
           <div className="glass p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 h-full flex flex-col justify-between overflow-y-auto">
             {paymentStep === 1 ? (
-              <div className="flex flex-col justify-between h-full">
+              <div className="flex flex-col justify-between min-h-full">
                 <div className="space-y-5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 font-bold font-sans">
@@ -475,7 +475,7 @@ export default function CheckoutPage() {
               </div>
             ) : (
               // Step 2: UPI details directly in the right card
-              <div className="flex flex-col justify-between h-full space-y-4">
+              <div className="flex flex-col justify-between min-h-full space-y-4">
                 
                 {/* Header */}
                 <div className="text-center">
