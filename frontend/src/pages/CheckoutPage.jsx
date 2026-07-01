@@ -430,9 +430,9 @@ export default function CheckoutPage() {
 
         {/* Right: Payment controls (stretched, 50% split) */}
         <div className="md:h-full">
-          <div className="glass p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 h-full flex flex-col justify-between overflow-y-auto">
+          <div className="glass p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 h-full flex flex-col overflow-y-auto">
             {paymentStep === 1 ? (
-              <div className="flex flex-col justify-between min-h-full">
+              <div className="flex flex-col justify-between flex-grow">
                 <div className="space-y-5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 font-bold font-sans">
@@ -475,7 +475,7 @@ export default function CheckoutPage() {
               </div>
             ) : (
               // Step 2: UPI details directly in the right card
-              <div className="flex flex-col justify-between min-h-full space-y-4">
+              <div className="flex flex-col justify-between flex-grow space-y-4">
                 
                 {/* Header */}
                 <div className="text-center">
