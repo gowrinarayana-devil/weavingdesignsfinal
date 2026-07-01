@@ -11,8 +11,9 @@ exports.generateSignedUrl = async (req, res) => {
     if (!designId) {
       return res.status(400).json({ error: 'Design ID is required.' });
     }
-    if (!email) {
-      return res.status(400).json({ error: 'Email address is required.' });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: 'Email address is invalid or required.' });
     }
 
     // 1. Mock simulation logic if Supabase is not configured

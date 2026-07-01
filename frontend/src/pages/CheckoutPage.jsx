@@ -74,7 +74,8 @@ export default function CheckoutPage() {
   const handlePayment = async () => {
     setError('');
     
-    if (!email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
       setError('Please enter a valid billing email address.');
       return;
     }
@@ -480,7 +481,7 @@ export default function CheckoutPage() {
                 <div className="text-center">
                   <h3 className="font-display font-bold text-base text-slate-900 dark:text-white">Pay Securely via UPI</h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Scan the QR code or pay directly to the UPI ID below to buy this design.
+                    Scan the QR code or follow the instructions below to buy this design.
                   </p>
                 </div>
 
@@ -497,26 +498,22 @@ export default function CheckoutPage() {
                   </span>
                 </div>
 
-                {/* UPI Address and Amount */}
-                <div className="grid grid-cols-2 gap-2.5 text-xs">
-                  <div className="py-1.5 px-2.5 bg-slate-550/5 dark:bg-dark-950 rounded-xl border border-slate-150 dark:border-slate-850 flex flex-col justify-center">
-                    <span className="text-[9px] text-slate-400 block mb-0.5">UPI Address:</span>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[10px] select-all truncate">{displayUpiId}</span>
-                      <button
-                        onClick={handleCopyUpiId}
-                        className="p-0.5 hover:bg-slate-200 dark:hover:bg-dark-800 rounded text-slate-500 transition-colors flex-shrink-0 ml-1"
-                        title="Copy UPI Address"
-                      >
-                        {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                      </button>
-                    </div>
-                  </div>
+                {/* Amount Due */}
+                <div className="py-2 px-3 bg-brand-500/5 dark:bg-brand-500/10 rounded-xl border border-brand-500/20 flex justify-between items-center text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 font-semibold">Amount Due:</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white text-sm">₹{upiOrderDetails?.amount / 100}</span>
+                </div>
 
-                  <div className="py-1.5 px-2.5 bg-slate-550/5 dark:bg-dark-950 rounded-xl border border-slate-150 dark:border-slate-850 flex flex-col justify-center">
-                    <span className="text-[9px] text-slate-400 block mb-0.5">Amount Due:</span>
-                    <span className="font-extrabold text-slate-900 dark:text-white text-xs">₹{upiOrderDetails?.amount / 100}</span>
-                  </div>
+                {/* Instructions */}
+                <div className="bg-slate-550/5 dark:bg-dark-950 p-3 rounded-xl border border-slate-150 dark:border-slate-850 text-[11px] text-slate-650 dark:text-slate-350 space-y-2">
+                  <span className="block font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[9px]">How to pay:</span>
+                  <ul className="space-y-1.5 leading-normal">
+                    <li className="flex gap-1.5"><span className="font-bold text-brand-500">1.</span> Take screenshot of the QR code</li>
+                    <li className="flex gap-1.5"><span className="font-bold text-brand-500">2.</span> Upload the screenshot in PhonePe, GPay, Paytm, etc.</li>
+                    <li className="flex gap-1.5"><span className="font-bold text-brand-500">3.</span> Make payment</li>
+                    <li className="flex gap-1.5"><span className="font-bold text-brand-500">4.</span> Copy UTR (12-digit transaction ID) after payment</li>
+                    <li className="flex gap-1.5"><span className="font-bold text-brand-500">5.</span> Paste the UTR number in below</li>
+                  </ul>
                 </div>
 
                 {/* UTR Input Form */}

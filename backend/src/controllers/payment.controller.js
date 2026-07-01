@@ -12,8 +12,9 @@ exports.createOrder = async (req, res) => {
     if (!designId && (!designIds || designIds.length === 0)) {
       return res.status(400).json({ error: 'Design ID(s) are required.' });
     }
-    if (!email) {
-      return res.status(400).json({ error: 'Customer email is required.' });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: 'Customer email is invalid or required.' });
     }
 
     const ids = designIds && designIds.length > 0 ? designIds : [designId];

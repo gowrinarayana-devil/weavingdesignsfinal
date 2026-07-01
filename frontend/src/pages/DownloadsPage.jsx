@@ -15,7 +15,8 @@ export default function DownloadsPage() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
       setError('Please enter a valid email address.');
       return;
     }
