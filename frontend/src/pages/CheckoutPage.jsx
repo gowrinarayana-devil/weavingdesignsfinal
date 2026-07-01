@@ -6,8 +6,15 @@ import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
 import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft, Download } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
+import { updateSEO } from '../utils/seo';
 
 export default function CheckoutPage() {
+  useEffect(() => {
+    updateSEO(
+      'Secure Checkout',
+      'Provide your billing email to securely pay with UPI QR code and download your purchased weaving and embroidery designs.'
+    );
+  }, []);
   const { cartItems, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();

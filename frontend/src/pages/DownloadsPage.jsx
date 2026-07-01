@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
 import { Download, AlertCircle, FileArchive, Search, Clock } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
+import { updateSEO } from '../utils/seo';
 
 export default function DownloadsPage() {
+  useEffect(() => {
+    updateSEO(
+      'My Purchased Downloads',
+      'Access and download your purchased Jacquard weaving and embroidery design files using your checkout email address.'
+    );
+  }, []);
   const [email, setEmail] = useState('');
   const [searchedEmail, setSearchedEmail] = useState('');
   const [hasSearched, setHasSearched] = useState(false);

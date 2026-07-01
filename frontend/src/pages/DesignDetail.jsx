@@ -4,6 +4,7 @@ import { supabase, isDummyClient } from '../supabase';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { ShoppingCart, CreditCard, ChevronLeft, ShieldCheck, FileText, CheckCircle2 } from 'lucide-react';
+import { updateSEO } from '../utils/seo';
 
 const MOCK_DESIGNS = [
   { id: '1', title: 'Traditional Gold Zari Butti Motif', description: 'A gorgeous, detailed gold thread bhutti embroidery motif. Production ready for blouses, sarees, and sleeves. Tested on modern high-speed machines.', price: 299, preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', category: 'Motif', stitches: 14200, colors: 3, height: '80mm', width: '80mm', formats: 'DST, PES, EXP, HUS, JEF' },
@@ -88,6 +89,15 @@ export default function DesignDetail() {
 
     fetchDesign();
   }, [id]);
+
+  useEffect(() => {
+    if (design) {
+      updateSEO(
+        design.title,
+        `${design.description || 'Download design.'} Premium ${design.category} embroidery design specifications: ${design.stitches} stitches, ${design.colors} colors, size ${design.width}x${design.height}.`
+      );
+    }
+  }, [design]);
 
   const handleBuyNow = () => {
     if (!design) return;

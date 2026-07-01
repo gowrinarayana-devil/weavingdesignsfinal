@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Trash2, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
+import { updateSEO } from '../utils/seo';
 
 export default function CartPage() {
   const { cartItems, cartTotal, removeFromCart, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    updateSEO(
+      'Shopping Cart',
+      'Review and manage the selected Jacquard and embroidery designs in your shopping cart before secure checkout.'
+    );
+  }, []);
 
   const handleCheckout = () => {
     navigate('/checkout');

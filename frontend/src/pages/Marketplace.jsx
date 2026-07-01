@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase, isDummyClient } from '../supabase';
 import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { updateSEO } from '../utils/seo';
 
 // High-fidelity mock designs for sandbox mode / empty state fallbacks
 const MOCK_DESIGNS = [
@@ -72,6 +73,10 @@ export default function Marketplace() {
     };
 
     fetchData();
+    updateSEO(
+      'Premium Weaving & Embroidery Designs Marketplace',
+      'Explore and download premium Jacquard weaving designs, border styles, motifs, and custom embroidery layouts with full color charts and machine config specs.'
+    );
   }, []);
 
   // Filter and Sort designs
