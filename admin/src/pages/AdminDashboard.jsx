@@ -560,8 +560,8 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
             <div className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 p-3 rounded-xl"><Users size={24} /></div>
             <div>
-              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider">Registered Users</span>
-              <strong className="text-slate-800 dark:text-slate-100 text-xl font-display font-bold">{stats.totalUsers}</strong>
+              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider">Downloaded Mails</span>
+              <strong className="text-slate-800 dark:text-slate-100 text-xl font-display font-bold">{stats.totalDownloadedEmails || 0}</strong>
             </div>
           </div>
           <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm">

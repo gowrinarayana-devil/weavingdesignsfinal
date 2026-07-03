@@ -167,6 +167,7 @@ exports.getDashboardStats = async (req, res) => {
         stats: {
           totalRevenue: 54950.00,
           totalUsers: 142,
+          totalDownloadedEmails: 87,
           totalOrders: 98,
           totalDesigns: 24,
           recentOrders: [
@@ -291,10 +292,27 @@ exports.getDashboardStats = async (req, res) => {
       sales: monthlyMap[month]
     }));
 
+    // Calculate unique downloaded emails count (no duplicate emails for counting)
+    const { data: downloadsData, error: downloadsErr } = await supabaseAdmin
+      .from('downloads')
+      .select('customer_email');
+
+    if (downloadsErr) {
+      throw downloadsErr;
+    }
+
+    const uniqueEmails = new Set(
+      (downloadsData || [])
+        .map(d => d.customer_email?.trim())
+        .filter(Boolean)
+    );
+    const totalDownloadedEmails = uniqueEmails.size;
+
     return res.status(200).json({
       stats: {
         totalRevenue,
         totalUsers: usersCount || 0,
+        totalDownloadedEmails,
         totalOrders,
         totalDesigns: designsCount || 0,
         recentOrders,
