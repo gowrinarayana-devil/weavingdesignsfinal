@@ -92,10 +92,52 @@ export default function DesignDetail() {
 
   useEffect(() => {
     if (design) {
-      updateSEO(
-        design.title,
-        `${design.description || 'Download design.'} Premium ${design.category} embroidery design specifications: ${design.stitches} stitches, ${design.colors} colors, size ${design.width}x${design.height}.`
-      );
+      // Build dynamic product schema for Google search engine rich results
+      const productSchema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": design.title,
+        "image": design.preview_image_url || design.image_url,
+        "description": design.description || `Premium ${design.category} embroidery design with ${design.stitches} stitches.`,
+        "offers": {
+          "@type": "Offer",
+          "price": design.price,
+          "priceCurrency": "INR",
+          "availability": "https://schema.org/InStock",
+          "url": window.location.href
+        },
+        "additionalProperty": [
+          {
+            "@type": "PropertyValue",
+            "name": "Stitches",
+            "value": design.stitches
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Colors",
+            "value": design.colors
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Dimensions",
+            "value": `${design.width} x ${design.height}`
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Formats",
+            "value": design.formats
+          }
+        ]
+      };
+
+      updateSEO({
+        title: design.title,
+        description: `${design.description || 'Download design.'} Premium ${design.category} embroidery design specifications: ${design.stitches} stitches, ${design.colors} colors, size ${design.width}x${design.height}.`,
+        image: design.preview_image_url || design.image_url,
+        url: window.location.href,
+        type: 'product',
+        schema: productSchema
+      });
     }
   }, [design]);
 
@@ -167,7 +209,7 @@ export default function DesignDetail() {
             <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-800 dark:text-slate-100">
               {design.title}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed text-sm sm:text-base">
+            <p className="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
               {design.description}
             </p>
           </div>

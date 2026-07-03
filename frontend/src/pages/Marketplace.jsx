@@ -73,11 +73,32 @@ export default function Marketplace() {
     };
 
     fetchData();
-    updateSEO(
-      'Premium Weaving & Embroidery Designs Marketplace',
-      'Explore and download premium Jacquard weaving designs, border styles, motifs, and custom embroidery layouts with full color charts and machine config specs.'
-    );
   }, []);
+
+  useEffect(() => {
+    const itemListSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "numberOfItems": designs.length,
+      "itemListElement": designs.slice(0, 12).map((d, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": `${window.location.origin}/design/${d.id}`,
+        "name": d.title,
+        "image": d.preview_image_url || d.image_url,
+        "description": d.description
+      }))
+    };
+
+    updateSEO({
+      title: 'Premium Weaving & Embroidery Designs Marketplace',
+      description: 'Explore and download premium Jacquard weaving designs, border styles, motifs, and custom embroidery layouts with full color charts and machine config specs.',
+      image: designs[0]?.preview_image_url || designs[0]?.image_url || `${window.location.origin}/logo.jpg`,
+      url: window.location.href,
+      type: 'website',
+      schema: itemListSchema
+    });
+  }, [designs]);
 
   // Filter and Sort designs
   const filteredDesigns = designs
@@ -222,7 +243,7 @@ export default function Marketplace() {
                     <h3 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-500 line-clamp-1 transition-colors text-base">
                       <Link to={`/design/${design.id}`}>{design.title}</Link>
                     </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-1.5 line-clamp-2 leading-relaxed flex-grow">
+                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-1.5 line-clamp-2 leading-relaxed flex-grow whitespace-pre-wrap">
                       {design.description}
                     </p>
                     
