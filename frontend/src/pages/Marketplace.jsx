@@ -44,7 +44,7 @@ export default function Marketplace() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
-  // Maintain exactly 2 rows based on responsive grid columns
+  // Maintain rows based on responsive grid columns (2 rows on desktop/tablet, 3 rows on mobile)
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -52,7 +52,7 @@ export default function Marketplace() {
       } else if (window.innerWidth >= 640) {
         setItemsPerPage(8);  // 4 cols * 2 rows
       } else {
-        setItemsPerPage(4);  // 2 cols * 2 rows
+        setItemsPerPage(6);  // 2 cols * 3 rows (mobile)
       }
     };
     handleResize();
@@ -159,37 +159,11 @@ export default function Marketplace() {
 
   const getPageNumbers = () => {
     const pages = [];
-    const maxVisiblePages = 5;
+    const start = Math.max(1, activePage - 1);
+    const end = Math.min(totalPages, activePage + 1);
     
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
-      
-      let start = Math.max(2, activePage - 1);
-      let end = Math.min(totalPages - 1, activePage + 1);
-      
-      if (activePage <= 3) {
-        end = 4;
-      } else if (activePage >= totalPages - 2) {
-        start = totalPages - 3;
-      }
-      
-      if (start > 2) {
-        pages.push('...');
-      }
-      
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      
-      if (end < totalPages - 1) {
-        pages.push('...');
-      }
-      
-      pages.push(totalPages);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
     }
     
     return pages;
@@ -380,7 +354,7 @@ export default function Marketplace() {
             {totalPages > 1 && (
               <div className="flex items-center justify-center space-x-1 sm:space-x-2 mt-12 py-6 border-t border-slate-100 dark:border-slate-900/60">
                 <button
-                  onClick={() => setCurrentPage(1)}
+                  onClick={() => setCurrentPage(activePage - 1)}
                   disabled={activePage === 1}
                   className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                     activePage === 1
@@ -388,21 +362,10 @@ export default function Marketplace() {
                       : 'bg-white dark:bg-dark-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-dark-800 hover:scale-[1.02] shadow-sm'
                   }`}
                 >
-                  &larr; First
+                  &larr; Previous
                 </button>
 
-                {getPageNumbers().map((page, idx) => {
-                  if (page === '...') {
-                    return (
-                      <span
-                        key={`ellipsis-${idx}`}
-                        className="px-2 py-2 text-slate-400 dark:text-slate-600 text-xs sm:text-sm select-none"
-                      >
-                        ...
-                      </span>
-                    );
-                  }
-
+                {getPageNumbers().map((page) => {
                   const isActive = activePage === page;
                   return (
                     <button
@@ -420,7 +383,7 @@ export default function Marketplace() {
                 })}
 
                 <button
-                  onClick={() => setCurrentPage(totalPages)}
+                  onClick={() => setCurrentPage(activePage + 1)}
                   disabled={activePage === totalPages}
                   className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                     activePage === totalPages
@@ -428,7 +391,7 @@ export default function Marketplace() {
                       : 'bg-white dark:bg-dark-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-dark-800 hover:scale-[1.02] shadow-sm'
                   }`}
                 >
-                  Last &rarr;
+                  Next &rarr;
                 </button>
               </div>
             )}
