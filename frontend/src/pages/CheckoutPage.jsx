@@ -41,6 +41,11 @@ export default function CheckoutPage() {
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [downloadingId, setDownloadingId] = useState(null);
 
+  // Scroll to top when payment step or order state changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [paymentStep, success, isPendingApproval]);
+
   const triggerAutomaticDownload = async (designId, customerEmail) => {
     setDownloadingId(designId);
     setDownloading(true);

@@ -104,7 +104,13 @@ export default function Marketplace() {
       return getSortedCategories(MOCK_CATEGORIES);
     }
   });
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    try {
+      return sessionStorage.getItem('weaving_selected_category') || 'All';
+    } catch (e) {
+      return 'All';
+    }
+  });
   
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest'); // price-asc, price-desc, popularity, newest
@@ -119,16 +125,23 @@ export default function Marketplace() {
   };
 
   // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    try {
+      const savedPage = sessionStorage.getItem('weaving_current_page');
+      return savedPage ? parseInt(savedPage, 10) : 1;
+    } catch (e) {
+      return 1;
+    }
+  });
   const [itemsPerPage, setItemsPerPage] = useState(getInitialItemsPerPage);
 
   // Maintain rows based on responsive grid columns (2 rows on desktop/tablet, 3 rows on mobile)
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
-        setItemsPerPage(12); // 6 cols * 2 rows
+        setItemsPerPage(12); // 3 cols * 4 rows (desktop)
       } else if (window.innerWidth >= 640) {
-        setItemsPerPage(8);  // 4 cols * 2 rows
+        setItemsPerPage(8);  // 4 cols * 2 rows (tablet)
       } else {
         setItemsPerPage(6);  // 2 cols * 3 rows (mobile)
       }
@@ -136,6 +149,29 @@ export default function Marketplace() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Save selectedCategory to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('weaving_selected_category', selectedCategory);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [selectedCategory]);
+
+  // Save currentPage to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('weaving_current_page', currentPage.toString());
+    } catch (e) {
+      console.error(e);
+    }
+  }, [currentPage]);
+
+  // Scroll to top smoothly when category or page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedCategory, currentPage]);
 
   // Fetch designs and categories from Supabase
   useEffect(() => {
@@ -399,7 +435,7 @@ export default function Marketplace() {
 
         {/* Grid Designs List */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-5 py-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 gap-3.5 sm:gap-5 py-8">
             {[...Array(itemsPerPage)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white dark:bg-dark-900 border border-slate-100 dark:border-slate-800/40 rounded-3xl overflow-hidden flex flex-col h-full">
                 <div className="aspect-square bg-slate-100/80 dark:bg-dark-950/80"></div>
@@ -417,7 +453,7 @@ export default function Marketplace() {
           </div>
         ) : displayedDesigns.length > 0 ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 gap-3.5 sm:gap-5">
               {displayedDesigns.map((design, index) => (
                 <div 
                   key={design.id} 
