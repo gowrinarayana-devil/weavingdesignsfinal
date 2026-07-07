@@ -34,13 +34,34 @@ const getSortedCategories = (cats) => {
 
 export default function Marketplace() {
   const { addToCart, isInCart } = useCart();
-  const [designs, setDesigns] = useState([]);
-  const [categories, setCategories] = useState(() => getSortedCategories(MOCK_CATEGORIES));
+  const [designs, setDesigns] = useState(() => {
+    try {
+      const cached = localStorage.getItem('weaving_designs_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [categories, setCategories] = useState(() => {
+    try {
+      const cached = localStorage.getItem('weaving_categories_cache');
+      return cached ? JSON.parse(cached) : getSortedCategories(MOCK_CATEGORIES);
+    } catch (e) {
+      return getSortedCategories(MOCK_CATEGORIES);
+    }
+  });
   const [selectedCategory, setSelectedCategory] = useState('All');
   
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest'); // price-asc, price-desc, popularity, newest
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = localStorage.getItem('weaving_designs_cache');
+      return !cached; // If cached designs exist, loading is false!
+    } catch (e) {
+      return true;
+    }
+  });
 
   // Helper to determine initial items per page based on viewport width
   const getInitialItemsPerPage = () => {
@@ -72,7 +93,10 @@ export default function Marketplace() {
   // Fetch designs and categories from Supabase
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      // Only set loading to true if we don't have cached data to show
+      if (designs.length === 0) {
+        setLoading(true);
+      }
       if (isDummyClient) {
         setDesigns(MOCK_DESIGNS);
         setLoading(false);
@@ -92,7 +116,9 @@ export default function Marketplace() {
         const dbCategories = categoriesResponse.data;
         if (dbCategories && dbCategories.length > 0) {
           const rawCats = ['All', ...dbCategories.map(c => c.name)];
-          setCategories(getSortedCategories(rawCats));
+          const sortedCats = getSortedCategories(rawCats);
+          setCategories(sortedCats);
+          localStorage.setItem('weaving_categories_cache', JSON.stringify(sortedCats));
         }
 
         const dbDesigns = designsResponse.data;
@@ -105,13 +131,17 @@ export default function Marketplace() {
             category: d.categories?.name || 'Border'
           }));
           setDesigns(formatted);
+          localStorage.setItem('weaving_designs_cache', JSON.stringify(formatted));
         } else {
           // Fallback if DB is empty to show beautiful mock catalog
           setDesigns(MOCK_DESIGNS);
         }
       } catch (err) {
         console.error('Failed to load designs from Supabase. Falling back to mock:', err);
-        setDesigns(MOCK_DESIGNS);
+        // Only override if we don't even have cached data
+        if (designs.length === 0) {
+          setDesigns(MOCK_DESIGNS);
+        }
       } finally {
         setLoading(false);
       }
@@ -268,7 +298,7 @@ export default function Marketplace() {
 
             {/* Sorting Select */}
             <div className="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
-              <span className="text-xs text-slate-400 font-semibold whitespace-nowrap">Sort By:</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold whitespace-nowrap">Sort By:</span>
               <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
                 <select
                   value={sort}

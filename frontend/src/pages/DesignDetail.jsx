@@ -222,23 +222,23 @@ export default function DesignDetail() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-400 block uppercase font-semibold">Stitch Count</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Stitch Count</span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.stitches.toLocaleString()}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-400 block uppercase font-semibold">Total Colors</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Total Colors</span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.colors}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-400 block uppercase font-semibold">Width</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Width</span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.width}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-400 block uppercase font-semibold">Height</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Height</span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.height}</span>
               </div>
               <div className="col-span-2 bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-400 block uppercase font-semibold">Supported Formats</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Supported Formats</span>
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{design.formats}</span>
               </div>
             </div>
