@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart } from 'lucide-react
 import { useCart } from '../context/CartContext';
 import { updateSEO } from '../utils/seo';
 import { slugify } from '../utils/slugify';
+import { getOptimizedImageUrl } from '../utils/image';
 
 // High-fidelity mock designs for sandbox mode / empty state fallbacks
 const MOCK_DESIGNS = [
@@ -319,7 +320,7 @@ export default function Marketplace() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
 
                     <img
-                      src={design.preview_image_url || design.image_url}
+                      src={getOptimizedImageUrl(design.preview_image_url || design.image_url, 400, 75)}
                       alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
                       loading={index < 4 ? "eager" : "lazy"}
                       fetchPriority={index < 4 ? "high" : "low"}

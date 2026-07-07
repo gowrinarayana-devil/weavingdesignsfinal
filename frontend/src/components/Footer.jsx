@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-900 pb-6 mb-6">
           <div className="flex items-center space-x-2">
-            <img src="/logo.jpg" alt="WEAVING DESIGNS Logo" className="w-8 h-8 object-cover rounded-lg shadow border border-slate-200/50 dark:border-slate-800/40" />
+            <img src="/logo.jpg" alt="WEAVING DESIGNS Logo" width="32" height="32" className="w-8 h-8 object-cover rounded-lg shadow border border-slate-200/50 dark:border-slate-800/40" />
             <span className="font-display font-extrabold text-lg tracking-tight text-slate-800 dark:text-slate-200">
               WEAVING DESIGNS
             </span>

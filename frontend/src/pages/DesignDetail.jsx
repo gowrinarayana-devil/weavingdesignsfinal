@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { ShoppingCart, CreditCard, ChevronLeft, ShieldCheck, FileText, CheckCircle2 } from 'lucide-react';
 import { updateSEO } from '../utils/seo';
+import { getOptimizedImageUrl } from '../utils/image';
 
 const MOCK_DESIGNS = [
   { id: '1', title: 'Traditional Gold Zari Butti Motif', description: 'A gorgeous, detailed gold thread bhutti embroidery motif. Production ready for blouses, sarees, and sleeves. Tested on modern high-speed machines.', price: 299, preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', category: 'Motif', stitches: 14200, colors: 3, height: '80mm', width: '80mm', formats: 'DST, PES, EXP, HUS, JEF' },
@@ -192,7 +193,7 @@ export default function DesignDetail() {
 
           {/* Actual protected Image */}
           <img
-            src={design.preview_image_url || design.image_url}
+            src={getOptimizedImageUrl(design.preview_image_url || design.image_url, 800, 80)}
             alt={`Premium ${design.category} Weaving Pattern - ${design.title}`}
             className="w-full h-full object-contain rounded-2xl no-select"
             onContextMenu={(e) => e.preventDefault()}
