@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import { App as CapacitorApp } from '@capacitor/app';
 
 // Pages
@@ -53,7 +54,7 @@ export default function App() {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Marketplace />} />
-              <Route path="/design/:id" element={<DesignDetail />} />
+              <Route path="/design/:id/:slug?" element={<DesignDetail />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/downloads" element={<DownloadsPage />} />
@@ -62,6 +63,8 @@ export default function App() {
               <Route path="*" element={<Marketplace />} />
             </Routes>
           </main>
+
+          <Footer />
 
           {/* Floating WhatsApp Support Button */}
           <a

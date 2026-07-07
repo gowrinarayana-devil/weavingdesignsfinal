@@ -1,0 +1,10 @@
+# Robots.txt for www.weavingdesigns.in
+# Hand-tailored to optimize crawl budget and protect dynamic routes
+
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /downloads
+Disallow: /api/
+
+Sitemap: https://www.weavingdesigns.in/sitemap.xml

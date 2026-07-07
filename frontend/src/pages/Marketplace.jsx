@@ -4,6 +4,7 @@ import { supabase, isDummyClient } from '../supabase';
 import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { updateSEO } from '../utils/seo';
+import { slugify } from '../utils/slugify';
 
 // High-fidelity mock designs for sandbox mode / empty state fallbacks
 const MOCK_DESIGNS = [
@@ -110,6 +111,31 @@ export default function Marketplace() {
   }, []);
 
   useEffect(() => {
+    const websiteSchema = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Weaving Designs",
+      "url": "https://www.weavingdesigns.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.weavingdesigns.in/?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    };
+
+    const organizationSchema = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Weaving Designs",
+      "url": "https://www.weavingdesigns.in",
+      "logo": "https://www.weavingdesigns.in/logo.jpg",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+91-9052572363",
+        "contactType": "customer service"
+      }
+    };
+
     const itemListSchema = {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -117,7 +143,7 @@ export default function Marketplace() {
       "itemListElement": designs.slice(0, 12).map((d, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "url": `${window.location.origin}/design/${d.id}`,
+        "url": `${window.location.origin}/design/${d.id}/${slugify(d.title)}`,
         "name": d.title,
         "image": d.preview_image_url || d.image_url,
         "description": d.description
@@ -130,7 +156,7 @@ export default function Marketplace() {
       image: designs[0]?.preview_image_url || designs[0]?.image_url || `${window.location.origin}/logo.jpg`,
       url: window.location.href,
       type: 'website',
-      schema: itemListSchema
+      schema: [websiteSchema, organizationSchema, itemListSchema]
     });
   }, [designs]);
 
@@ -284,7 +310,7 @@ export default function Marketplace() {
                 >
                   
                   {/* Design Image Preview */}
-                  <Link to={`/design/${design.id}`} className="relative block overflow-hidden aspect-square bg-slate-100 dark:bg-dark-950">
+                  <Link to={`/design/${design.id}/${slugify(design.title)}`} className="relative block overflow-hidden aspect-square bg-slate-100 dark:bg-dark-950">
                     {/* Visual protection watermark banner */}
                     <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.03)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.03)_50%,rgba(0,0,0,0.03)_75%,transparent_75%,transparent)] bg-[size:30px_30px] pointer-events-none z-10 opacity-60"></div>
                     
@@ -293,7 +319,7 @@ export default function Marketplace() {
 
                     <img
                       src={design.preview_image_url || design.image_url}
-                      alt={design.title}
+                      alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 no-select"
                       onContextMenu={(e) => e.preventDefault()}
@@ -315,7 +341,7 @@ export default function Marketplace() {
                   {/* Card Metadata */}
                   <div className="p-2.5 sm:p-3.5 flex flex-col flex-grow">
                     <h3 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-500 line-clamp-1 transition-colors text-xs sm:text-sm">
-                      <Link to={`/design/${design.id}`}>{design.title}</Link>
+                      <Link to={`/design/${design.id}/${slugify(design.title)}`}>{design.title}</Link>
                     </h3>
                     <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs mt-1 line-clamp-2 leading-relaxed flex-grow whitespace-pre-wrap">
                       {design.description}
