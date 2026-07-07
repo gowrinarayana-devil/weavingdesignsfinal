@@ -7,14 +7,68 @@ import { updateSEO } from '../utils/seo';
 import { slugify } from '../utils/slugify';
 import { getOptimizedImageUrl } from '../utils/image';
 
-// High-fidelity mock designs for sandbox mode / empty state fallbacks
+// High-fidelity seed designs to bootstrap the catalog instantly on load
 const MOCK_DESIGNS = [
-  { id: '1', title: 'Traditional Gold Zari Butti Motif', description: 'A gorgeous, detailed gold thread bhutti embroidery motif. Production ready for blouses, sarees, and sleeves. Tested on modern high-speed machines.', price: 299, preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80', category: 'Motif', is_featured: true, created_at: new Date().toISOString(), downloads: 48 },
-  { id: '2', title: 'Royal Elephant Mandala Blouse Back', description: 'Intricate ethnic elephant mandala design specifically tailored for bridal blouse back panels. High stitch density, extremely premium styling.', price: 499, preview_image_url: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&w=400&q=80', category: 'Blouse', is_featured: true, created_at: new Date(Date.now() - 86400000).toISOString(), downloads: 72 },
-  { id: '3', title: 'Peacock Border Lace Pattern', description: 'Seamless running border lace with majestic peacock motifs. Ideal for saree borders, dupatta hems, and sherwani cuffs. Easily resizable.', price: 199, preview_image_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=400&q=80', category: 'Border', is_featured: false, created_at: new Date(Date.now() - 172800000).toISOString(), downloads: 34 },
-  { id: '4', title: 'Abstract Geometry Sleeve Pattern', description: 'Modern abstract geometric sleeve embroidery panel. Fits multiple frame sizes, neat color changes, low thread-break rate.', price: 249, preview_image_url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80', category: 'Sleeve', is_featured: false, created_at: new Date(Date.now() - 259200000).toISOString(), downloads: 20 },
-  { id: '5', title: 'Classic Floral Pallu Border', description: 'Detailed heavy floral vines pattern for saree pallus. Contains multi-layered shaded fills and delicate running borders.', price: 349, preview_image_url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80', category: 'Pallu', is_featured: true, created_at: new Date(Date.now() - 345600000).toISOString(), downloads: 55 },
-  { id: '6', title: 'Delicate Rose Vines neckline', description: 'Elegant neck design featuring delicate rose vines and leaves. Beautiful placement for kurtis, suits, and dresses.', price: 279, preview_image_url: 'https://images.unsplash.com/photo-1547891654-e66ed7edd96c?auto=format&fit=crop&w=400&q=80', category: 'Neckline', is_featured: false, created_at: new Date(Date.now() - 432000000).toISOString(), downloads: 18 }
+  {
+    id: "fa37b61c-ee2d-4158-8e4a-16732b2e0893",
+    title: "480 HOOKS , 92 REED , STEEL REED ",
+    description: "WELCOME TO WEAVING DESIGNS\nROYAL PEACOCK DESIGN\n480 HOOKS 1120 WEAVING THREADS ( 760 MEENA , 360 JARI )\nWORK IN BOTH HANDLOOM WEAVING AND POWERLOOM JACQUARD",
+    price: 180,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/fa37b61c-ee2d-4158-8e4a-16732b2e0893.jpg",
+    category: "BUTTIS",
+    is_featured: false,
+    created_at: "2026-07-06T15:41:30.206147+00:00"
+  },
+  {
+    id: "75e19932-cfdd-4bf7-99ee-ec0a83a38365",
+    title: "480 HOOKS , 100 STEEL REED , BUTTIS DESIGN",
+    description: "WELCOME TO WEAVING DESIGNS \nBEAUTIFUL MANGO SHAPE BUTTIS AND SMALL PEACOCK BUTTIS\n480 HOOKS , 100 STEEL REED , 688 WEAVING THREADS ( 464 MEENA + 224 JARI )\nWORKS IN BOTH HANDLOOM WEAVING AND POWERLOOM JACQUARD",
+    price: 100,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/75e19932-cfdd-4bf7-99ee-ec0a83a38365.jpg",
+    category: "BUTTIS",
+    is_featured: false,
+    created_at: "2026-07-06T15:29:57.401929+00:00"
+  },
+  {
+    id: "79311a0b-fae0-456f-ab77-20927d842ad7",
+    title: "480 HOOKS , 100 REED, 552 CARDS ( 276 MEENA + 276 JARI )",
+    description: "WELCOME TO WEAVING DESIGNS \nVINTAGE BEAUTIFUL PEACOCK AND CHAKRAM BUTTA DESIGN\n480 HOOKS , 100 REED , 70 + 70 JARI CARDS DESIGN \nSMOOTH CLOTH , MEENA ANI WEAVING \nWORKS IN BOTH     HANDLOOM AND POWERLOOM ELECTRONIC JACQUARD\n ",
+    price: 70,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/79311a0b-fae0-456f-ab77-20927d842ad7.jpg",
+    category: "BUTTIS",
+    is_featured: false,
+    created_at: "2026-07-06T15:19:00.499275+00:00"
+  },
+  {
+    id: "80590932-eedd-432d-9f37-55fb4e230a00",
+    title: "240 HOOKS , 360 CARDS , 84 REED BORDER ",
+    description: "WELCOME TO WEAVING DESIGNS \n240 HOOKS , 360 CARDS , 84 STEEL REED \nSMALL BEAUTIFUL PEACOCK BORDER WITH SMALL FLOWER\nWORK IN HANDLOOM AND ELECTRONIC JACQUARD",
+    price: 140,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/80590932-eedd-432d-9f37-55fb4e230a00.jpg",
+    category: "border",
+    is_featured: false,
+    created_at: "2026-07-06T15:06:59.096173+00:00"
+  },
+  {
+    id: "4cca6f42-dda9-496f-9276-f80e5a7feceb",
+    title: "240 HOOKS BORDER, 400 CARDS , 84 REED . PEACOCK BORDER",
+    description: "WELCOME TO WEAVING DESIGNS\nVINTAGE PEACOCK BORDER\nBEAUTIFUL PEACOCK BORDER , THIS DESIGN SET AS IN ROUND SHAPE OF REVERSE HOOKS AND HALF ROUND SHAPE AND EXPAND THE BORDER WITH BANARAS\n240 HOOKS , 400 CARDS , 84 STEEL REED \nWORK IN HANDLOOM AND ELETRONIC JACQUARD",
+    price: 200,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/4cca6f42-dda9-496f-9276-f80e5a7feceb.jpg",
+    category: "border",
+    is_featured: false,
+    created_at: "2026-07-06T14:48:57.472563+00:00"
+  },
+  {
+    id: "201228af-76c4-46f8-bb1c-c1cc54c8fa13",
+    title: "240 HOOKS , 84 REED  VINTAGE BORDER",
+    description: "WELCOME TO WEAVING DESIGNS\nVINTAGE BORDER \n240 HOOKS , 398 CARDS \n84 STEEL REED\nSUPPORT ON HANDLOOM AND ELECTRONIC JACQUARD\nBORDER CAN CHANGE AS U LOOK BEAUTIFUL DESIGN LIKE MAIN BORDER DOWN SIDE OR UP SIDE AND EXPAND BANARAS AS U LIKE ",
+    price: 200,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/201228af-76c4-46f8-bb1c-c1cc54c8fa13.jpg",
+    category: "border",
+    is_featured: false,
+    created_at: "2026-07-06T04:10:45.085149+00:00"
+  }
 ];
 
 const MOCK_CATEGORIES = ['All', 'Border', 'Blouse', 'Motif', 'Sleeve', 'Pallu', 'Neckline'];
@@ -37,9 +91,9 @@ export default function Marketplace() {
   const [designs, setDesigns] = useState(() => {
     try {
       const cached = localStorage.getItem('weaving_designs_cache');
-      return cached ? JSON.parse(cached) : [];
+      return cached ? JSON.parse(cached) : MOCK_DESIGNS;
     } catch (e) {
-      return [];
+      return MOCK_DESIGNS;
     }
   });
   const [categories, setCategories] = useState(() => {
@@ -54,14 +108,7 @@ export default function Marketplace() {
   
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest'); // price-asc, price-desc, popularity, newest
-  const [loading, setLoading] = useState(() => {
-    try {
-      const cached = localStorage.getItem('weaving_designs_cache');
-      return !cached; // If cached designs exist, loading is false!
-    } catch (e) {
-      return true;
-    }
-  });
+  const [loading, setLoading] = useState(false);
 
   // Helper to determine initial items per page based on viewport width
   const getInitialItemsPerPage = () => {
