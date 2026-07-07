@@ -80,25 +80,27 @@ export default function Marketplace() {
       }
 
       try {
-        // Fetch categories and designs in parallel, checking if HTML pre-fetch is already running
-        const [categoriesData, designsData] = await Promise.all([
-          window.__categoriesPromise || supabase.from('categories').select('name').then(res => res.data),
-          window.__designsPromise || supabase.from('designs').select(`
+        // Fetch categories and designs in parallel to avoid sequential waterfalls
+        const [categoriesResponse, designsResponse] = await Promise.all([
+          supabase.from('categories').select('name'),
+          supabase.from('designs').select(`
             *,
             categories (name)
-          `).then(res => {
-            if (res.error) throw res.error;
-            return res.data;
-          })
+          `)
         ]);
 
-        if (categoriesData && categoriesData.length > 0) {
-          const rawCats = ['All', ...categoriesData.map(c => c.name)];
+        const dbCategories = categoriesResponse.data;
+        if (dbCategories && dbCategories.length > 0) {
+          const rawCats = ['All', ...dbCategories.map(c => c.name)];
           setCategories(getSortedCategories(rawCats));
         }
 
-        if (designsData && designsData.length > 0) {
-          const formatted = designsData.map(d => ({
+        const dbDesigns = designsResponse.data;
+        const error = designsResponse.error;
+        if (error) throw error;
+
+        if (dbDesigns && dbDesigns.length > 0) {
+          const formatted = dbDesigns.map(d => ({
             ...d,
             category: d.categories?.name || 'Border'
           }));
