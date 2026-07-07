@@ -407,7 +407,6 @@ export default function Marketplace() {
                     key={cat}
                     onClick={() => {
                       setSelectedCategory(cat);
-                      setCurrentPage(1);
                     }}
                     className={`shrink-0 px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-xl text-xs font-semibold transition-all transform hover:scale-[1.03] active:scale-95 duration-200 ${
                       isActive
