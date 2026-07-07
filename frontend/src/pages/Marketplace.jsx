@@ -250,6 +250,7 @@ export default function Marketplace() {
                     setSort(e.target.value);
                     setCurrentPage(1);
                   }}
+                  aria-label="Sort designs list by"
                   className="w-full bg-slate-100/80 dark:bg-dark-950/80 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all appearance-none pr-10 font-medium text-slate-800 dark:text-slate-100"
                 >
                   <option value="newest">Newest Additions</option>

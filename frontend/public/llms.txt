@@ -1,0 +1,17 @@
+# Weaving Designs - Premium Embroidery & Jacquard Marketplace
+
+Weaving Designs is a digital storefront where creators and businesses can search, preview, and download premium Jacquard weaving patterns and custom embroidery files.
+
+## Primary Routes
+
+- [Homepage Catalog](https://www.weavingdesigns.in/) - Browse and filter premium patterns by hook configurations, reed specs, and borders.
+- [Shopping Cart](https://www.weavingdesigns.in/cart) - Manage the selected embroidery files before secure payment.
+- [Checkout Portal](https://www.weavingdesigns.in/checkout) - Purchase patterns securely using UPI credentials.
+- [Downloads Portal](https://www.weavingdesigns.in/downloads) - Access and retrieve purchased zip files using your billing email.
+- [WhatsApp Support line](https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support.) - Direct contact point for custom order queries and technical help.
+
+## Technical Scope
+
+This marketplace delivers high-resolution production files in industry-standard machine formats:
+- **Formats**: DST, PES, EXP, HUS, JEF, XXX, BMP, and custom CAD configurations.
+- **Specifications**: Explicit stitch counts, needle/color maps, and dimensions are provided for all files.
