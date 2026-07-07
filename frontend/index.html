@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Embroidery Design Marketplace - Buy Premium Embroidery Machine Designs" />
     
+    <!-- Supabase Data Pre-fetch to eliminate React-mount query waterfall -->
+    <script>
+      (function() {
+        var url = "%VITE_SUPABASE_URL%";
+        var key = "%VITE_SUPABASE_ANON_KEY%";
+        if (url && key && !url.includes('dummy') && !url.includes('your-supabase') && !url.startsWith('%')) {
+          window.__categoriesPromise = fetch(url + '/rest/v1/categories?select=name', {
+            headers: { 'apikey': key, 'Authorization': 'Bearer ' + key }
+          }).then(function(res) { return res.json(); }).catch(function() { return null; });
+
+          window.__designsPromise = fetch(url + '/rest/v1/designs?select=*,categories(name)', {
+            headers: { 'apikey': key, 'Authorization': 'Bearer ' + key }
+          }).then(function(res) { return res.json(); }).catch(function() { return null; });
+        }
+      })();
+    </script>
+    
     <!-- Preconnect to Supabase for faster API fetches and image downloads -->
     <link rel="preconnect" href="https://hhpxxburlqkpgyrmqtmk.supabase.co" />
     <link rel="preconnect" href="https://hhpxxburlqkpgyrmqtmk.supabase.co" crossorigin />
