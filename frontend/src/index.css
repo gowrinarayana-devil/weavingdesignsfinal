@@ -55,3 +55,12 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-brand-500;
 }
+
+/* Hide scrollbar utility for horizontal scrollable category rows */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

@@ -273,12 +273,12 @@ export default function Marketplace() {
             </div>
           </div>
 
-          <div className="border-t border-slate-100 dark:border-slate-800/60 pt-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">
+          <div className="border-t border-slate-100 dark:border-slate-800/60 pt-4 flex flex-col sm:flex-row sm:items-center gap-3 overflow-hidden">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">
               <SlidersHorizontal size={14} className="text-brand-500" />
               <span>Categories</span>
             </div>
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1.5 -mb-1.5 w-full">
               {categories.map((cat) => {
                 const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
                 return (
@@ -288,10 +288,10 @@ export default function Marketplace() {
                       setSelectedCategory(cat);
                       setCurrentPage(1);
                     }}
-                    className={`px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-xl text-xs font-semibold transition-all transform hover:scale-[1.03] active:scale-95 duration-200 ${
+                    className={`shrink-0 px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-xl text-xs font-semibold transition-all transform hover:scale-[1.03] active:scale-95 duration-200 ${
                       isActive
                         ? 'bg-gradient-to-r from-brand-500 to-teal-600 text-white shadow-md shadow-brand-500/25 border border-brand-500'
-                        : 'bg-slate-100/90 dark:bg-dark-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-dark-800 border border-slate-200/20 dark:border-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
+                        : 'bg-slate-100/90 dark:bg-dark-900 text-slate-700 dark:text-slate-300 border border-slate-200/20 dark:border-slate-800/40 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
                     {cat === 'All' ? 'All Categories' : cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -364,7 +364,7 @@ export default function Marketplace() {
                     <h2 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-500 line-clamp-1 transition-colors text-xs sm:text-sm">
                       <Link to={`/design/${design.id}/${slugify(design.title)}`}>{design.title}</Link>
                     </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs mt-1 line-clamp-2 leading-relaxed flex-grow whitespace-pre-wrap">
+                    <p className="text-slate-600 dark:text-slate-300 text-[10px] sm:text-xs mt-1 line-clamp-2 leading-relaxed flex-grow whitespace-pre-wrap">
                       {design.description}
                     </p>
                     
@@ -445,7 +445,7 @@ export default function Marketplace() {
           </div>
         ) : (
           <div className="text-center py-16 bg-white dark:bg-dark-900/40 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
-            <p className="text-slate-500 dark:text-slate-400 font-medium">No weaving designs found matching the current filters.</p>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">No weaving designs found matching the current filters.</p>
             <button
               onClick={() => { setSearch(''); setSelectedCategory('All'); setCurrentPage(1); }}
               className="text-brand-500 font-bold hover:underline mt-2 text-sm"

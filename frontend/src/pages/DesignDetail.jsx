@@ -210,7 +210,7 @@ export default function DesignDetail() {
             <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-800 dark:text-slate-100">
               {design.title}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
+            <p className="text-slate-600 dark:text-slate-300 mt-4 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
               {design.description}
             </p>
           </div>
