@@ -342,9 +342,9 @@ export default function Marketplace() {
 
                   {/* Card Metadata */}
                   <div className="p-2.5 sm:p-3.5 flex flex-col flex-grow">
-                    <h3 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-500 line-clamp-1 transition-colors text-xs sm:text-sm">
+                    <h2 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-500 line-clamp-1 transition-colors text-xs sm:text-sm">
                       <Link to={`/design/${design.id}/${slugify(design.title)}`}>{design.title}</Link>
-                    </h3>
+                    </h2>
                     <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs mt-1 line-clamp-2 leading-relaxed flex-grow whitespace-pre-wrap">
                       {design.description}
                     </p>
