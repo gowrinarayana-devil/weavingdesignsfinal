@@ -42,9 +42,17 @@ export default function Marketplace() {
   const [sort, setSort] = useState('newest'); // price-asc, price-desc, popularity, newest
   const [loading, setLoading] = useState(true);
 
+  // Helper to determine initial items per page based on viewport width
+  const getInitialItemsPerPage = () => {
+    if (typeof window === 'undefined') return 12;
+    if (window.innerWidth >= 1024) return 12;
+    if (window.innerWidth >= 640) return 8;
+    return 6;
+  };
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [itemsPerPage, setItemsPerPage] = useState(getInitialItemsPerPage);
 
   // Maintain rows based on responsive grid columns (2 rows on desktop/tablet, 3 rows on mobile)
   useEffect(() => {
@@ -57,7 +65,6 @@ export default function Marketplace() {
         setItemsPerPage(6);  // 2 cols * 3 rows (mobile)
       }
     };
-    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
