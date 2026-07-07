@@ -52,7 +52,7 @@ export default function Navbar() {
               href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20want%20to%20request%20a%20custom%20weaving%20design."
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer"
+              className="bg-brand-700 hover:bg-brand-900 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer"
             >
               <span>Make My Own Design</span>
             </a>
@@ -113,7 +113,7 @@ export default function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setIsOpen(false)}
-              className="block w-full text-center bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow"
+              className="block w-full text-center bg-brand-700 hover:bg-brand-900 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow"
             >
               Make My Own Design
             </a>
