@@ -139,7 +139,7 @@ export default function Marketplace() {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
-        setItemsPerPage(12); // 3 cols * 4 rows (desktop)
+        setItemsPerPage(12); // 4 cols * 3 rows (desktop)
       } else if (window.innerWidth >= 640) {
         setItemsPerPage(8);  // 4 cols * 2 rows (tablet)
       } else {
@@ -435,7 +435,7 @@ export default function Marketplace() {
 
         {/* Grid Designs List */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 gap-3.5 sm:gap-5 py-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3.5 sm:gap-5 py-8">
             {[...Array(itemsPerPage)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white dark:bg-dark-900 border border-slate-100 dark:border-slate-800/40 rounded-3xl overflow-hidden flex flex-col h-full">
                 <div className="aspect-square bg-slate-100/80 dark:bg-dark-950/80"></div>
@@ -453,7 +453,7 @@ export default function Marketplace() {
           </div>
         ) : displayedDesigns.length > 0 ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 gap-3.5 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3.5 sm:gap-5">
               {displayedDesigns.map((design, index) => (
                 <div 
                   key={design.id} 
