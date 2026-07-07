@@ -80,21 +80,23 @@ export default function Marketplace() {
       }
 
       try {
-        // Fetch categories
-        const { data: dbCategories } = await supabase.from('categories').select('name');
+        // Fetch categories and designs in parallel to avoid sequential await waterfall
+        const [categoriesResponse, designsResponse] = await Promise.all([
+          supabase.from('categories').select('name'),
+          supabase.from('designs').select(`
+            *,
+            categories (name)
+          `)
+        ]);
+
+        const dbCategories = categoriesResponse.data;
         if (dbCategories && dbCategories.length > 0) {
           const rawCats = ['All', ...dbCategories.map(c => c.name)];
           setCategories(getSortedCategories(rawCats));
         }
 
-        // Fetch designs with categories
-        const { data: dbDesigns, error } = await supabase
-          .from('designs')
-          .select(`
-            *,
-            categories (name)
-          `);
-
+        const dbDesigns = designsResponse.data;
+        const error = designsResponse.error;
         if (error) throw error;
 
         if (dbDesigns && dbDesigns.length > 0) {
