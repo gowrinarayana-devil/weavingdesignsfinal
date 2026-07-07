@@ -23,6 +23,11 @@ export default function AdminDashboard() {
   const [previewFile, setPreviewFile] = useState(null);
   const [zipFile, setZipFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [hooks, setHooks] = useState('');
+  const [cards, setCards] = useState('');
+  const [box, setBox] = useState('');
+  const [reed, setReed] = useState('');
+  const [formats, setFormats] = useState('DST, PES, EXP, XXX');
 
   // Categories list
   const [categories, setCategories] = useState([]);
@@ -42,6 +47,11 @@ export default function AdminDashboard() {
   const [editPreviewFile, setEditPreviewFile] = useState(null);
   const [editZipFile, setEditZipFile] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const [editHooks, setEditHooks] = useState('');
+  const [editCards, setEditCards] = useState('');
+  const [editBox, setEditBox] = useState('');
+  const [editReed, setEditReed] = useState('');
+  const [editFormats, setEditFormats] = useState('');
 
   const filteredOrders = stats?.recentOrders?.filter((order) => {
     if (ordersSubTab === 'pending') return order.status === 'pending';
@@ -97,6 +107,11 @@ export default function AdminDashboard() {
             preview_image_url,
             zip_file_path,
             category_id,
+            hooks,
+            cards,
+            box,
+            reed,
+            formats,
             categories (name)
           `)
           .order('created_at', { ascending: false });
@@ -227,7 +242,12 @@ export default function AdminDashboard() {
             price: parseFloat(price),
             preview_image_url: previewUrl,
             zip_file_path: zipPath,
-            is_featured: isFeatured
+            is_featured: isFeatured,
+            hooks: hooks || null,
+            cards: cards || null,
+            box: box || null,
+            reed: reed || null,
+            formats: formats || null
           });
 
         if (dbErr) throw dbErr;
@@ -242,6 +262,11 @@ export default function AdminDashboard() {
       setIsFeatured(false);
       setPreviewFile(null);
       setZipFile(null);
+      setHooks('');
+      setCards('');
+      setBox('');
+      setReed('');
+      setFormats('DST, PES, EXP, XXX');
 
       // Refresh stats & list
       fetchStatsAndCategories();
@@ -264,6 +289,11 @@ export default function AdminDashboard() {
     setEditIsFeatured(design.is_featured);
     setEditPreviewFile(null);
     setEditZipFile(null);
+    setEditHooks(design.hooks || '');
+    setEditCards(design.cards || '');
+    setEditBox(design.box || '');
+    setEditReed(design.reed || '');
+    setEditFormats(design.formats || '');
   };
 
   // Close Edit Dialog
@@ -276,6 +306,11 @@ export default function AdminDashboard() {
     setEditIsFeatured(false);
     setEditPreviewFile(null);
     setEditZipFile(null);
+    setEditHooks('');
+    setEditCards('');
+    setEditBox('');
+    setEditReed('');
+    setEditFormats('');
   };
 
   // Save/Update Design Handler
@@ -334,7 +369,12 @@ export default function AdminDashboard() {
             price: parseFloat(editPrice),
             preview_image_url: previewUrl,
             zip_file_path: zipPath,
-            is_featured: editIsFeatured
+            is_featured: editIsFeatured,
+            hooks: editHooks || null,
+            cards: editCards || null,
+            box: editBox || null,
+            reed: editReed || null,
+            formats: editFormats || null
           })
           .eq('id', designId);
 
@@ -746,6 +786,65 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Weaving Specifications */}
+              <div className="border-t border-slate-150 dark:border-slate-800 pt-4 space-y-4">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Weaving Specifications</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Hooks</label>
+                    <input
+                      type="text"
+                      value={hooks}
+                      onChange={(e) => setHooks(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="e.g. 480 hooks"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cards</label>
+                    <input
+                      type="text"
+                      value={cards}
+                      onChange={(e) => setCards(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="e.g. 960 cards"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Box / Boxes</label>
+                    <input
+                      type="text"
+                      value={box}
+                      onChange={(e) => setBox(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="e.g. 2 boxes"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reed</label>
+                    <input
+                      type="text"
+                      value={reed}
+                      onChange={(e) => setReed(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="e.g. 100 steel reed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Supported Formats</label>
+                    <input
+                      type="text"
+                      value={formats}
+                      onChange={(e) => setFormats(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="DST, PES, EXP, XXX"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
@@ -1113,6 +1212,65 @@ export default function AdminDashboard() {
                 <label htmlFor="editIsFeatured" className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
                   Featured (Best Seller)
                 </label>
+              </div>
+            </div>
+
+            {/* Weaving Specifications */}
+            <div className="border-t border-slate-150 dark:border-slate-800 pt-4 space-y-4">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Weaving Specifications</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Hooks</label>
+                  <input
+                    type="text"
+                    value={editHooks}
+                    onChange={(e) => setEditHooks(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="e.g. 480 hooks"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cards</label>
+                  <input
+                    type="text"
+                    value={editCards}
+                    onChange={(e) => setEditCards(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="e.g. 960 cards"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Box / Boxes</label>
+                  <input
+                    type="text"
+                    value={editBox}
+                    onChange={(e) => setEditBox(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="e.g. 2 boxes"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reed</label>
+                  <input
+                    type="text"
+                    value={editReed}
+                    onChange={(e) => setEditReed(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="e.g. 100 steel reed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Supported Formats</label>
+                  <input
+                    type="text"
+                    value={editFormats}
+                    onChange={(e) => setEditFormats(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                    placeholder="DST, PES, EXP, XXX"
+                  />
+                </div>
               </div>
             </div>
 

@@ -8,12 +8,96 @@ import { updateSEO } from '../utils/seo';
 import { getOptimizedImageUrl } from '../utils/image';
 
 const MOCK_DESIGNS = [
-  { id: '1', title: 'Traditional Gold Zari Butti Motif', description: 'A gorgeous, detailed gold thread bhutti embroidery motif. Production ready for blouses, sarees, and sleeves. Tested on modern high-speed machines.', price: 299, preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', category: 'Motif', stitches: 14200, colors: 3, height: '80mm', width: '80mm', formats: 'DST, PES, EXP, HUS, JEF' },
-  { id: '2', title: 'Royal Elephant Mandala Blouse Back', description: 'Intricate ethnic elephant mandala design specifically tailored for bridal blouse back panels. High stitch density, extremely premium styling.', price: 499, preview_image_url: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&w=800&q=80', category: 'Blouse', stitches: 34500, colors: 5, height: '220mm', width: '240mm', formats: 'DST, PES, EXP, XXX' },
-  { id: '3', title: 'Peacock Border Lace Pattern', description: 'Seamless running border lace with majestic peacock motifs. Ideal for saree borders, dupatta hems, and sherwani cuffs. Easily resizable.', price: 199, preview_image_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=800&q=80', category: 'Border', stitches: 9800, colors: 2, height: '45mm', width: '150mm', formats: 'DST, PES, HUS' },
-  { id: '4', title: 'Abstract Geometry Sleeve Pattern', description: 'Modern abstract geometric sleeve embroidery panel. Fits multiple frame sizes, neat color changes, low thread-break rate.', price: 249, preview_image_url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80', category: 'Sleeve', stitches: 18400, colors: 4, height: '110mm', width: '130mm', formats: 'DST, PES, JEF' },
-  { id: '5', title: 'Classic Floral Pallu Border', description: 'Detailed heavy floral vines pattern for saree pallus. Contains multi-layered shaded fills and delicate running borders.', price: 349, preview_image_url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80', category: 'Pallu', stitches: 26100, colors: 6, height: '180mm', width: '220mm', formats: 'DST, PES, EXP, HUS, JEF, XXX' },
-  { id: '6', title: 'Delicate Rose Vines neckline', description: 'Elegant neck design featuring delicate rose vines and leaves. Beautiful placement for kurtis, suits, and dresses.', price: 279, preview_image_url: 'https://images.unsplash.com/photo-1547891654-e66ed7edd96c?auto=format&fit=crop&w=800&q=80', category: 'Neckline', stitches: 15300, colors: 3, height: '140mm', width: '120mm', formats: 'DST, PES, HUS, JEF' }
+  {
+    id: "fa37b61c-ee2d-4158-8e4a-16732b2e0893",
+    title: "480 HOOKS , 92 REED , STEEL REED ",
+    description: "WELCOME TO WEAVING DESIGNS\nROYAL PEACOCK DESIGN\n480 HOOKS 1120 WEAVING THREADS ( 760 MEENA , 360 JARI )\nWORK IN BOTH HANDLOOM WEAVING AND POWERLOOM JACQUARD",
+    price: 180,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/fa37b61c-ee2d-4158-8e4a-16732b2e0893.jpg",
+    category: "BUTTIS",
+    is_featured: false,
+    created_at: "2026-07-06T15:41:30.206147+00:00",
+    hooks: "480 hooks",
+    cards: "1120 cards",
+    box: "2 boxes",
+    reed: "92 steel reed",
+    formats: "DST, PES, EXP, XXX"
+  },
+  {
+    id: "75e19932-cfdd-4bf7-99ee-ec0a83a38365",
+    title: "480 HOOKS , 100 STEEL REED , BUTTIS DESIGN",
+    description: "WELCOME TO WEAVING DESIGNS \nBEAUTIFUL MANGO SHAPE BUTTIS AND SMALL PEACOCK BUTTIS\n480 HOOKS , 100 STEEL REED , 688 WEAVING THREADS ( 464 MEENA + 224 JARI )\nWORKS IN BOTH HANDLOOM WEAVING AND POWERLOOM JACQUARD",
+    price: 100,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/75e19932-cfdd-4bf7-99ee-ec0a83a38365.jpg",
+    category: "BUTTIS",
+    is_featured: false,
+    created_at: "2026-07-06T15:29:57.401929+00:00",
+    hooks: "480 hooks",
+    cards: "688 cards",
+    box: "1 box",
+    reed: "100 steel reed",
+    formats: "DST, PES, EXP, XXX"
+  },
+  {
+    id: "79311a0b-fae0-456f-ab77-20927d842ad7",
+    title: "480 HOOKS , 100 REED, 552 CARDS ( 276 MEENA + 276 JARI )",
+    description: "WELCOME TO WEAVING DESIGNS \nVINTAGE BEAUTIFUL PEACOCK AND CHAKRAM BUTTA DESIGN\n480 HOOKS , 100 REED , 70 + 70 JARI CARDS DESIGN \nSMOOTH CLOTH , MEENA ANI WEAVING \nWORKS IN BOTH     HANDLOOM AND POWERLOOM ELECTRONIC JACQUARD\n ",
+    price: 70,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/79311a0b-fae0-456f-ab77-20927d842ad7.jpg",
+    category: "BUTTIS",
+    is_featured: false,
+    created_at: "2026-07-06T15:19:00.499275+00:00",
+    hooks: "480 hooks",
+    cards: "552 cards",
+    box: "2 boxes",
+    reed: "100 reed",
+    formats: "DST, PES, EXP, XXX"
+  },
+  {
+    id: "80590932-eedd-432d-9f37-55fb4e230a00",
+    title: "240 HOOKS , 360 CARDS , 84 REED BORDER ",
+    description: "WELCOME TO WEAVING DESIGNS \n240 HOOKS , 360 CARDS , 84 STEEL REED \nSMALL BEAUTIFUL PEACOCK BORDER WITH SMALL FLOWER\nWORK IN HANDLOOM AND ELECTRONIC JACQUARD",
+    price: 140,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/80590932-eedd-432d-9f37-55fb4e230a00.jpg",
+    category: "border",
+    is_featured: false,
+    created_at: "2026-07-06T15:06:59.096173+00:00",
+    hooks: "240 hooks",
+    cards: "360 cards",
+    box: "1 box",
+    reed: "84 steel reed",
+    formats: "DST, PES, EXP, XXX"
+  },
+  {
+    id: "4cca6f42-dda9-496f-9276-f80e5a7feceb",
+    title: "240 HOOKS BORDER, 400 CARDS , 84 REED . PEACOCK BORDER",
+    description: "WELCOME TO WEAVING DESIGNS\nVINTAGE PEACOCK BORDER\nBEAUTIFUL PEACOCK BORDER , THIS DESIGN SET AS IN ROUND SHAPE OF REVERSE HOOKS AND HALF ROUND SHAPE AND EXPAND THE BORDER WITH BANARAS\n240 HOOKS , 400 CARDS , 84 STEEL REED \nWORK IN HANDLOOM AND ELETRONIC JACQUARD",
+    price: 200,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/4cca6f42-dda9-496f-9276-f80e5a7feceb.jpg",
+    category: "border",
+    is_featured: false,
+    created_at: "2026-07-06T14:48:57.472563+00:00",
+    hooks: "240 hooks",
+    cards: "400 cards",
+    box: "1 box",
+    reed: "84 steel reed",
+    formats: "DST, PES, EXP, XXX"
+  },
+  {
+    id: "201228af-76c4-46f8-bb1c-c1cc54c8fa13",
+    title: "240 HOOKS , 84 REED  VINTAGE BORDER",
+    description: "WELCOME TO WEAVING DESIGNS\nVINTAGE BORDER \n240 HOOKS , 398 CARDS \n84 STEEL REED\nSUPPORT ON HANDLOOM AND ELECTRONIC JACQUARD\nBORDER CAN CHANGE AS U LOOK BEAUTIFUL DESIGN LIKE MAIN BORDER DOWN SIDE OR UP SIDE AND EXPAND BANARAS AS U LIKE ",
+    price: 200,
+    preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/201228af-76c4-46f8-bb1c-c1cc54c8fa13.jpg",
+    category: "border",
+    is_featured: false,
+    created_at: "2026-07-06T04:10:45.085149+00:00",
+    hooks: "240 hooks",
+    cards: "398 cards",
+    box: "1 box",
+    reed: "84 steel reed",
+    formats: "DST, PES, EXP, XXX"
+  }
 ];
 
 export default function DesignDetail() {
@@ -71,11 +155,10 @@ export default function DesignDetail() {
           setDesign({
             ...data,
             category: data.categories?.name || 'Border',
-            // Assign mock detailed fields if absent in DB
-            stitches: data.stitches || 18000,
-            colors: data.colors || 3,
-            height: data.height || '120mm',
-            width: data.width || '120mm',
+            hooks: data.hooks || '',
+            cards: data.cards || '',
+            box: data.box || '',
+            reed: data.reed || '',
             formats: data.formats || 'DST, PES, EXP, XXX'
           });
         }
@@ -99,7 +182,7 @@ export default function DesignDetail() {
         "@type": "Product",
         "name": design.title,
         "image": design.preview_image_url || design.image_url,
-        "description": design.description || `Premium ${design.category} embroidery design with ${design.stitches} stitches.`,
+        "description": design.description || `Premium Weaving Design with hooks: ${design.hooks}, cards: ${design.cards}, reed: ${design.reed}.`,
         "offers": {
           "@type": "Offer",
           "price": design.price,
@@ -110,30 +193,35 @@ export default function DesignDetail() {
         "additionalProperty": [
           {
             "@type": "PropertyValue",
-            "name": "Stitches",
-            "value": design.stitches
+            "name": "Hooks",
+            "value": design.hooks || 'N/A'
           },
           {
             "@type": "PropertyValue",
-            "name": "Colors",
-            "value": design.colors
+            "name": "Cards",
+            "value": design.cards || 'N/A'
           },
           {
             "@type": "PropertyValue",
-            "name": "Dimensions",
-            "value": `${design.width} x ${design.height}`
+            "name": "Box/Boxes",
+            "value": design.box || 'N/A'
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Reed",
+            "value": design.reed || 'N/A'
           },
           {
             "@type": "PropertyValue",
             "name": "Formats",
-            "value": design.formats
+            "value": design.formats || 'DST, PES, EXP, XXX'
           }
         ]
       };
 
       updateSEO({
         title: design.title,
-        description: `${design.description || 'Download design.'} Premium ${design.category} embroidery design specifications: ${design.stitches} stitches, ${design.colors} colors, size ${design.width}x${design.height}.`,
+        description: `${design.description || 'Download design.'} Premium Weaving Design parameters: hooks: ${design.hooks || 'N/A'}, cards: ${design.cards || 'N/A'}, box: ${design.box || 'N/A'}, reed: ${design.reed || 'N/A'}.`,
         image: design.preview_image_url || design.image_url,
         url: window.location.href,
         type: 'product',
@@ -222,24 +310,24 @@ export default function DesignDetail() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Stitch Count</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.stitches.toLocaleString()}</span>
+                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Hooks</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.hooks || 'N/A'}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Total Colors</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.colors}</span>
+                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Cards</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.cards || 'N/A'}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Width</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.width}</span>
+                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Box / Boxes</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.box || 'N/A'}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Height</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.height}</span>
+                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Reed</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.reed || 'N/A'}</span>
               </div>
               <div className="col-span-2 bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-semibold">Supported Formats</span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{design.formats}</span>
+                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Supported Formats</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{design.formats || 'DST, PES, EXP, XXX'}</span>
               </div>
             </div>
           </div>

@@ -39,6 +39,11 @@ CREATE TABLE IF NOT EXISTS public.designs (
     preview_image_url TEXT NOT NULL, -- Public preview URL
     zip_file_path TEXT NOT NULL,     -- Private storage path (original-files/design_id.zip)
     is_featured BOOLEAN NOT NULL DEFAULT false,
+    hooks TEXT,                      -- Weaving hook count parameter (e.g. 480 hooks)
+    cards TEXT,                      -- Weaving card count parameter (e.g. 960 cards)
+    box TEXT,                        -- Weaving box count parameter (e.g. 2 boxes)
+    reed TEXT,                       -- Weaving reed density parameter (e.g. 100 steel reed)
+    formats TEXT,                    -- Supported file formats (e.g. DST, PES, EXP, XXX)
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
