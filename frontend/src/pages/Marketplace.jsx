@@ -204,7 +204,7 @@ export default function Marketplace() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 animate-fade-in">
       {/* Featured Banner Hero */}
       <div className="relative rounded-3xl overflow-hidden mb-12 bg-gradient-to-r from-slate-900 via-teal-950 to-slate-950 dark:from-dark-900 dark:via-brand-950 dark:to-dark-950 p-8 sm:p-12 text-white shadow-xl border border-slate-800/40">
         <div className="relative z-10 max-w-2xl">

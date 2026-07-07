@@ -192,7 +192,7 @@ export default function CheckoutPage() {
 
   if (success) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center animate-fade-in">
+      <div className="w-full max-w-2xl mx-auto px-4 py-16 text-center animate-fade-in">
         <div className="inline-flex bg-emerald-500/10 text-emerald-500 p-4 rounded-full mb-6">
           <CheckCircle size={48} />
         </div>
@@ -304,7 +304,7 @@ export default function CheckoutPage() {
 
   if (isPendingApproval) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center animate-fade-in">
+      <div className="w-full max-w-2xl mx-auto px-4 py-16 text-center animate-fade-in">
         <div className="inline-flex bg-amber-500/10 text-amber-500 p-4 rounded-full mb-6">
           <Clock className="animate-pulse" size={48} />
         </div>
@@ -376,7 +376,7 @@ export default function CheckoutPage() {
     : '';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in flex flex-col">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in flex flex-col">
       {/* Back Button Option */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <Link

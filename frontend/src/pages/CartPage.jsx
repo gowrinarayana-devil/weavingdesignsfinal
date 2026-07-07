@@ -22,7 +22,7 @@ export default function CartPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-800 dark:text-slate-100 mb-8 flex items-center gap-2">
         <ShoppingBag className="text-brand-500" />
         <span>Your Shopping Cart</span>

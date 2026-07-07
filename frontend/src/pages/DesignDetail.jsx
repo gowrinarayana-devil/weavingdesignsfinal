@@ -158,7 +158,7 @@ export default function DesignDetail() {
 
   if (!design) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <div className="w-full max-w-7xl mx-auto px-4 py-16 text-center">
         <h2 className="font-display font-bold text-2xl text-slate-800 dark:text-slate-100">Design Not Found</h2>
         <p className="text-slate-500 mt-2">The design template path does not exist or has been removed.</p>
         <Link to="/" className="text-brand-500 font-semibold hover:underline mt-4 inline-block">Back to Marketplace</Link>
@@ -167,7 +167,7 @@ export default function DesignDetail() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       
       {/* Back Button */}
       <Link to="/" className="inline-flex items-center space-x-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-sm font-semibold mb-6">
