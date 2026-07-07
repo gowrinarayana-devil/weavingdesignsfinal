@@ -1,19 +1,16 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Custom plugin to move CSS links right after the viewport meta tag to prevent FOUC and viewport resizing shifts
-const prioritizeCssPlugin = () => {
+// Custom plugin to move CSS links right after the viewport meta tag to prevent FOUC, and replace env variables in HTML
+const htmlOptimizePlugin = (env) => {
   return {
-    name: 'prioritize-css',
+    name: 'html-optimize',
     transformIndexHtml(html) {
+      // 1. Move CSS links to prevent FOUC
       const cssRegex = /<link rel="stylesheet"[^>]*>/g;
       const cssLinks = html.match(cssRegex) || [];
-      if (cssLinks.length === 0) return html;
-      
-      // Remove them from their original positions
       let cleanHtml = html.replace(cssRegex, '');
       
-      // Inject them right after the viewport meta tag to ensure layout scales are configured first
       const cssInjected = cssLinks.join('\n    ');
       const viewportRegex = /<meta name="viewport"[^>]*>/;
       if (viewportRegex.test(cleanHtml)) {
@@ -21,23 +18,35 @@ const prioritizeCssPlugin = () => {
       } else {
         cleanHtml = cleanHtml.replace('<head>', `<head>\n    ${cssInjected}`);
       }
+      
+      // 2. Explicitly replace Supabase environment variables in HTML script pre-fetcher
+      if (env.VITE_SUPABASE_URL) {
+        cleanHtml = cleanHtml.replace(/%VITE_SUPABASE_URL%/g, env.VITE_SUPABASE_URL);
+      }
+      if (env.VITE_SUPABASE_ANON_KEY) {
+        cleanHtml = cleanHtml.replace(/%VITE_SUPABASE_ANON_KEY%/g, env.VITE_SUPABASE_ANON_KEY);
+      }
+      
       return cleanHtml;
     }
   };
 };
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react(), prioritizeCssPlugin()],
-  server: {
-    port: 3000,
-    host: true, // allows access from external network interfaces
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
+    plugins: [react(), htmlOptimizePlugin(env)],
+    server: {
+      port: 3000,
+      host: true, // allows access from external network interfaces
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false
+        }
       }
     }
-  }
+  };
 })
