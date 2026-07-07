@@ -120,6 +120,22 @@ export default function Marketplace() {
     fetchData();
   }, []);
 
+  // Dynamically preload the LCP image (first design card) as soon as data arrives
+  useEffect(() => {
+    if (designs && designs.length > 0) {
+      const firstDesign = designs[0];
+      const imageUrl = getOptimizedImageUrl(firstDesign.preview_image_url || firstDesign.image_url, 400, 75);
+      if (imageUrl) {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = imageUrl;
+        link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+      }
+    }
+  }, [designs]);
+
   useEffect(() => {
     const websiteSchema = {
       "@context": "https://schema.org",
