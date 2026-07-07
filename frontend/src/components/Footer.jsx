@@ -18,13 +18,8 @@ export default function Footer() {
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        <div className="flex flex-col items-center justify-center text-xs">
           <p>&copy; {new Date().getFullYear()} WEAVING DESIGNS. All rights reserved.</p>
-          <div className="flex space-x-6">
-            <Link to="/" className="hover:text-brand-500 transition-colors">Marketplace</Link>
-            <a href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support." target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">Contact Support</a>
-            <a href="http://localhost:8080" className="hover:text-brand-500 transition-colors">Admin Portal</a>
-          </div>
         </div>
       </div>
     </footer>
