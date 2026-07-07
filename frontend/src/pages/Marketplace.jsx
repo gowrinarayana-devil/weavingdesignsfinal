@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase, isDummyClient } from '../supabase';
 import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -104,13 +104,8 @@ export default function Marketplace() {
       return getSortedCategories(MOCK_CATEGORIES);
     }
   });
-  const [selectedCategory, setSelectedCategory] = useState(() => {
-    try {
-      return sessionStorage.getItem('weaving_selected_category') || 'All';
-    } catch (e) {
-      return 'All';
-    }
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || 'All';
   
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest'); // price-asc, price-desc, popularity, newest
@@ -125,14 +120,10 @@ export default function Marketplace() {
   };
 
   // Pagination states
-  const [currentPage, setCurrentPage] = useState(() => {
-    try {
-      const savedPage = sessionStorage.getItem('weaving_current_page');
-      return savedPage ? parseInt(savedPage, 10) : 1;
-    } catch (e) {
-      return 1;
-    }
-  });
+  const currentPage = (() => {
+    const savedPage = searchParams.get('page');
+    return savedPage ? parseInt(savedPage, 10) : 1;
+  })();
   const [itemsPerPage, setItemsPerPage] = useState(getInitialItemsPerPage);
 
   // Maintain rows based on responsive grid columns (2 rows on desktop/tablet, 3 rows on mobile)
@@ -150,23 +141,22 @@ export default function Marketplace() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Save selectedCategory to sessionStorage
-  useEffect(() => {
-    try {
-      sessionStorage.setItem('weaving_selected_category', selectedCategory);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [selectedCategory]);
+  const setSelectedCategory = (cat) => {
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      params.set('category', cat);
+      params.set('page', '1');
+      return params;
+    });
+  };
 
-  // Save currentPage to sessionStorage
-  useEffect(() => {
-    try {
-      sessionStorage.setItem('weaving_current_page', currentPage.toString());
-    } catch (e) {
-      console.error(e);
-    }
-  }, [currentPage]);
+  const setCurrentPage = (page) => {
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      params.set('page', page.toString());
+      return params;
+    });
+  };
 
   // Scroll to top smoothly when category or page changes
   useEffect(() => {
