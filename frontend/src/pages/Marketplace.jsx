@@ -303,7 +303,7 @@ export default function Marketplace() {
         ) : displayedDesigns.length > 0 ? (
           <div className="space-y-8">
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-5">
-              {displayedDesigns.map((design) => (
+              {displayedDesigns.map((design, index) => (
                 <div 
                   key={design.id} 
                   className="group relative bg-white dark:bg-dark-900 border border-slate-100 dark:border-slate-800/40 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl dark:hover:shadow-brand-500/5 hover:border-brand-500/20 dark:hover:border-brand-500/20 transition-all duration-300 flex flex-col h-full"
@@ -320,7 +320,8 @@ export default function Marketplace() {
                     <img
                       src={design.preview_image_url || design.image_url}
                       alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
-                      loading="lazy"
+                      loading={index < 4 ? "eager" : "lazy"}
+                      fetchPriority={index < 4 ? "high" : "low"}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 no-select"
                       onContextMenu={(e) => e.preventDefault()}
                     />
