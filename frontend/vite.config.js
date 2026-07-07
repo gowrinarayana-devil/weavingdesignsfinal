@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Custom plugin to move CSS links to the top of <head> to prevent FOUC (Flash of Unstyled Content) and CLS
+// Custom plugin to move CSS links right after the viewport meta tag to prevent FOUC and viewport resizing shifts
 const prioritizeCssPlugin = () => {
   return {
     name: 'prioritize-css',
@@ -13,9 +13,14 @@ const prioritizeCssPlugin = () => {
       // Remove them from their original positions
       let cleanHtml = html.replace(cssRegex, '');
       
-      // Inject them right at the start of <head>
+      // Inject them right after the viewport meta tag to ensure layout scales are configured first
       const cssInjected = cssLinks.join('\n    ');
-      cleanHtml = cleanHtml.replace('<head>', `<head>\n    ${cssInjected}`);
+      const viewportRegex = /<meta name="viewport"[^>]*>/;
+      if (viewportRegex.test(cleanHtml)) {
+        cleanHtml = cleanHtml.replace(viewportRegex, `$&\n    ${cssInjected}`);
+      } else {
+        cleanHtml = cleanHtml.replace('<head>', `<head>\n    ${cssInjected}`);
+      }
       return cleanHtml;
     }
   };
