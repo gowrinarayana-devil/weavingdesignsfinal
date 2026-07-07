@@ -50,7 +50,7 @@ export default function App() {
         <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 dark:bg-dark-950 dark:text-slate-100 font-sans transition-colors duration-200">
           <Navbar />
           
-          <main className="flex-grow">
+          <main className="flex-grow flex flex-col">
             <Suspense fallback={
               <div className="min-h-[40vh] flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-500"></div>
@@ -67,10 +67,9 @@ export default function App() {
                 {/* Fallback route */}
                 <Route path="*" element={<Marketplace />} />
               </Routes>
+              <Footer />
             </Suspense>
           </main>
-
-          <Footer />
 
           {/* Floating WhatsApp Support Button */}
           <a
