@@ -399,7 +399,7 @@ export default function Marketplace() {
               <SlidersHorizontal size={14} className="text-brand-500" />
               <span>Categories</span>
             </div>
-            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1.5 -mb-1.5 w-full">
+            <div className="flex flex-wrap gap-2 items-center w-full">
               {categories.map((cat) => {
                 const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
                 return (
