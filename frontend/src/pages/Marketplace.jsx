@@ -304,9 +304,20 @@ export default function Marketplace() {
 
         {/* Grid Designs List */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5 py-12">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-5 py-8">
             {[...Array(itemsPerPage)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-slate-100/80 dark:bg-dark-900/60 border border-slate-200/50 dark:border-slate-800/40 rounded-3xl h-64 sm:h-72"></div>
+              <div key={i} className="animate-pulse bg-white dark:bg-dark-900 border border-slate-100 dark:border-slate-800/40 rounded-3xl overflow-hidden flex flex-col h-full">
+                <div className="aspect-square bg-slate-100/80 dark:bg-dark-950/80"></div>
+                <div className="p-3 space-y-2.5 flex-grow flex flex-col">
+                  <div className="h-4 bg-slate-200/60 dark:bg-dark-800/60 rounded-md w-3/4"></div>
+                  <div className="h-3 bg-slate-200/40 dark:bg-dark-800/40 rounded-md w-full"></div>
+                  <div className="h-3 bg-slate-200/40 dark:bg-dark-800/40 rounded-md w-5/6 flex-grow"></div>
+                  <div className="border-t border-slate-100 dark:border-slate-800/40 pt-3 mt-3 flex items-center justify-between gap-2">
+                    <div className="h-4 bg-slate-200/60 dark:bg-dark-800/60 rounded-md w-1/3"></div>
+                    <div className="h-7 bg-slate-200/60 dark:bg-dark-800/60 rounded-xl w-1/3"></div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : displayedDesigns.length > 0 ? (
