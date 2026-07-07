@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -6,12 +6,12 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { App as CapacitorApp } from '@capacitor/app';
 
-// Pages
-import Marketplace from './pages/Marketplace';
-import DesignDetail from './pages/DesignDetail';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import DownloadsPage from './pages/DownloadsPage';
+// Pages (Lazy loaded for optimal code-splitting and faster load times)
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const DesignDetail = lazy(() => import('./pages/DesignDetail'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const DownloadsPage = lazy(() => import('./pages/DownloadsPage'));
 
 
 export default function App() {
@@ -51,17 +51,23 @@ export default function App() {
           <Navbar />
           
           <main className="flex-grow">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Marketplace />} />
-              <Route path="/design/:id/:slug?" element={<DesignDetail />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/downloads" element={<DownloadsPage />} />
-              
-              {/* Fallback route */}
-              <Route path="*" element={<Marketplace />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="min-h-[40vh] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-500"></div>
+              </div>
+            }>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Marketplace />} />
+                <Route path="/design/:id/:slug?" element={<DesignDetail />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/downloads" element={<DownloadsPage />} />
+                
+                {/* Fallback route */}
+                <Route path="*" element={<Marketplace />} />
+              </Routes>
+            </Suspense>
           </main>
 
           <Footer />
