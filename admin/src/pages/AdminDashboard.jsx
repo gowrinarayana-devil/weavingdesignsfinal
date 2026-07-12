@@ -174,17 +174,7 @@ export default function AdminDashboard() {
     }
   }, [adminToken]);
 
-  // Lock body scroll when editing modal is open for stability
-  useEffect(() => {
-    if (editingDesign) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [editingDesign]);
+
 
   const handleDownloadInvoice = (order) => {
     const matchedDesign = designs.find((d) => d.id === order.design_id);
@@ -1150,75 +1140,275 @@ export default function AdminDashboard() {
 
       {activeTab === 'designs' && (
         <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
-          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-            <FileImage size={18} className="text-brand-500" />
-            <span>Manage Uploaded Designs</span>
-          </h3>
+          {editingDesign ? (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div>
+                  <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                    <Edit size={18} className="text-brand-500" />
+                    <span>Update Weaving Design</span>
+                  </h3>
+                  <p className="text-xs text-slate-450 dark:text-slate-400 mt-1">Editing: {editingDesign.title}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Back to List
+                </button>
+              </div>
 
-          {designs.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <th className="pb-3 pr-4">Image</th>
-                    <th className="pb-3 pr-4">Design Title</th>
-                    <th className="pb-3 pr-4">Category</th>
-                    <th className="pb-3 pr-4">Price</th>
-                    <th className="pb-3 pr-4">Featured</th>
-                    <th className="pb-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
-                  {designs.map((design) => (
-                    <tr key={design.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
-                      <td className="py-3 pr-4">
-                        <img
-                          src={design.preview_image_url}
-                          alt={design.title}
-                          className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
-                        />
-                      </td>
-                      <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
-                        {design.title}
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
-                        <span className="bg-slate-100 dark:bg-dark-850 px-2 py-0.5 rounded font-medium text-slate-550">
-                          {design.categories?.name || 'Uncategorized'}
-                        </span>
-                      </td>
-                      <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-355">
-                        ₹{design.price}
-                      </td>
-                      <td className="py-3 pr-4 text-xs">
-                        {design.is_featured ? (
-                          <span className="bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded font-bold">Featured</span>
-                        ) : (
-                          <span className="text-slate-400">Standard</span>
-                        )}
-                      </td>
-                      <td className="py-3 text-right space-x-2">
-                        <button
-                          onClick={() => startEdit(design)}
-                          className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                        >
-                          <Edit size={12} />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteDesign(design.id, design.title, design.preview_image_url, design.zip_file_path)}
-                          className="inline-flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-650 dark:text-red-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                        >
-                          <Trash2 size={12} />
-                          <span>Delete</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <form onSubmit={handleUpdateDesign} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column: General Information */}
+                <div className="space-y-3.5">
+                  <h4 className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">General Information</h4>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (INR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editPrice}
+                        onChange={(e) => setEditPrice(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
+                      <select
+                        value={editCategory}
+                        onChange={(e) => setEditCategory(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      rows={4}
+                      className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    ></textarea>
+                  </div>
+
+                  <div className="flex items-center pl-1">
+                    <input
+                      type="checkbox"
+                      id="editIsFeatured"
+                      checked={editIsFeatured}
+                      onChange={(e) => setEditIsFeatured(e.target.checked)}
+                      className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500"
+                    />
+                    <label htmlFor="editIsFeatured" className="ml-2 text-[10px] font-bold text-slate-500 dark:text-slate-455 uppercase tracking-wider cursor-pointer">
+                      Featured (Best Seller)
+                    </label>
+                  </div>
+                </div>
+
+                {/* Right Column: Weaving Specifications & Asset Uploads */}
+                <div className="space-y-3.5">
+                  <h4 className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Specifications & Assets</h4>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Hooks</label>
+                      <input
+                        type="text"
+                        value={editHooks}
+                        onChange={(e) => setEditHooks(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        placeholder="e.g. 480"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cards</label>
+                      <input
+                        type="text"
+                        value={editCards}
+                        onChange={(e) => setEditCards(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        placeholder="e.g. 960"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Boxs</label>
+                      <input
+                        type="text"
+                        value={editBox}
+                        onChange={(e) => setEditBox(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        placeholder="e.g. 2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reed</label>
+                      <input
+                        type="text"
+                        value={editReed}
+                        onChange={(e) => setEditReed(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        placeholder="e.g. 100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Formats</label>
+                      <input
+                        type="text"
+                        value={editFormats}
+                        onChange={(e) => setEditFormats(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-955 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        placeholder="DST, PES"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-1.5">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                        Replace Preview Image (Optional)
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setEditPreviewFile(e.target.files[0])}
+                        className="w-full text-xs text-slate-450 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                        Replace Original ZIP File (Optional)
+                      </label>
+                      <input
+                        type="file"
+                        accept=".zip"
+                        onChange={(e) => setEditZipFile(e.target.files[0])}
+                        className="w-full text-xs text-slate-450 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions footer inside right column */}
+                  <div className="flex gap-3 pt-3 justify-end border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={updating}
+                      className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      {updating ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      ) : (
+                        <span>Save Changes</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           ) : (
-            <p className="text-sm text-slate-400 italic">No designs have been uploaded to the catalog yet.</p>
+            <>
+              <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+                <FileImage size={18} className="text-brand-500" />
+                <span>Manage Uploaded Designs</span>
+              </h3>
+
+              {designs.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="pb-3 pr-4">Image</th>
+                        <th className="pb-3 pr-4">Design Title</th>
+                        <th className="pb-3 pr-4">Category</th>
+                        <th className="pb-3 pr-4">Price</th>
+                        <th className="pb-3 pr-4">Featured</th>
+                        <th className="pb-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
+                      {designs.map((design) => (
+                        <tr key={design.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
+                          <td className="py-3 pr-4">
+                            <img
+                              src={design.preview_image_url}
+                              alt={design.title}
+                              className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
+                            />
+                          </td>
+                          <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
+                            {design.title}
+                          </td>
+                          <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
+                            <span className="bg-slate-100 dark:bg-dark-850 px-2 py-0.5 rounded font-medium text-slate-550">
+                              {design.categories?.name || 'Uncategorized'}
+                            </span>
+                          </td>
+                          <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-355">
+                            ₹{design.price}
+                          </td>
+                          <td className="py-3 pr-4 text-xs">
+                            {design.is_featured ? (
+                              <span className="bg-brand-500/10 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded font-bold">Featured</span>
+                            ) : (
+                              <span className="text-slate-400">Standard</span>
+                            )}
+                          </td>
+                          <td className="py-3 text-right space-x-2">
+                            <button
+                              onClick={() => startEdit(design)}
+                              className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteDesign(design.id, design.title, design.preview_image_url, design.zip_file_path)}
+                              className="inline-flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-650 dark:text-red-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400 italic">No designs have been uploaded to the catalog yet.</p>
+              )}
+            </>
           )}
         </div>
       )}
@@ -1332,196 +1522,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Edit Design Overlay Modal */}
-      {editingDesign && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in overflow-hidden">
-        <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl max-w-3xl w-full shadow-2xl space-y-4 max-h-[95vh] overflow-y-auto md:overflow-visible">
-          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
-            <h3 className="font-display font-black text-base text-slate-900 dark:text-white">Update Weaving Design</h3>
-            <button onClick={cancelEdit} className="p-1.5 hover:bg-slate-100 dark:hover:bg-dark-950 rounded-lg text-slate-400 transition-colors">
-              <X size={18} />
-            </button>
-          </div>
 
-          <form onSubmit={handleUpdateDesign} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Left Column: General Information */}
-            <div className="space-y-3.5">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">General Information</h4>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
-                <input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (INR)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editPrice}
-                    onChange={(e) => setEditPrice(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
-                  <select
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                ></textarea>
-              </div>
-
-              <div className="flex items-center pl-1">
-                <input
-                  type="checkbox"
-                  id="editIsFeatured"
-                  checked={editIsFeatured}
-                  onChange={(e) => setEditIsFeatured(e.target.checked)}
-                  className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500"
-                />
-                <label htmlFor="editIsFeatured" className="ml-2 text-[10px] font-bold text-slate-500 dark:text-slate-455 uppercase tracking-wider cursor-pointer">
-                  Featured (Best Seller)
-                </label>
-              </div>
-            </div>
-
-            {/* Right Column: Weaving Specifications & Asset Uploads */}
-            <div className="space-y-3.5">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Specifications & Assets</h4>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Hooks</label>
-                  <input
-                    type="text"
-                    value={editHooks}
-                    onChange={(e) => setEditHooks(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    placeholder="e.g. 480"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cards</label>
-                  <input
-                    type="text"
-                    value={editCards}
-                    onChange={(e) => setEditCards(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    placeholder="e.g. 960"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Boxs</label>
-                  <input
-                    type="text"
-                    value={editBox}
-                    onChange={(e) => setEditBox(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    placeholder="e.g. 2"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reed</label>
-                  <input
-                    type="text"
-                    value={editReed}
-                    onChange={(e) => setEditReed(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    placeholder="e.g. 100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Formats</label>
-                  <input
-                    type="text"
-                    value={editFormats}
-                    onChange={(e) => setEditFormats(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
-                    placeholder="DST, PES"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-1.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-                    Replace Preview Image (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setEditPreviewFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-                    Replace Original ZIP File (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".zip"
-                    onChange={(e) => setEditZipFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Actions footer inside right column */}
-              <div className="flex gap-3 pt-3 justify-end border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={cancelEdit}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={updating}
-                  className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  {updating ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                  ) : (
-                    <span>Save Changes</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
     </div>
   );
 }
