@@ -147,7 +147,7 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={handleInstallClick}
-                    className="hidden md:inline-flex bg-brand-700 hover:bg-brand-900 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg items-center gap-1.5 cursor-pointer"
+                    className="hidden md:inline-flex bg-brand-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md items-center gap-1.5 cursor-pointer"
                   >
                     <span>Install App</span>
                   </button>
@@ -223,7 +223,7 @@ export default function Navbar() {
           {(isInstallable || isIOS) && (
             <button 
               onClick={handleInstallClick}
-              className="bg-brand-800 hover:bg-brand-900 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer shrink-0"
+              className="bg-brand-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer shrink-0"
             >
               <span>Install App</span>
             </button>

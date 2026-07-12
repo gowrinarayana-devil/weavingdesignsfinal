@@ -38,6 +38,7 @@ export default function AdminDashboard() {
   // Manage designs list
   const [designs, setDesigns] = useState([]);
   const [editingDesign, setEditingDesign] = useState(null);
+  const [downloadsList, setDownloadsList] = useState([]);
 
   // Edit design form states
   const [editTitle, setEditTitle] = useState('');
@@ -120,6 +121,30 @@ export default function AdminDashboard() {
         if (designsErr) throw designsErr;
         setDesigns(dbDesigns || []);
       }
+
+      // 4. Fetch downloads list from Supabase
+      if (isDummyClient) {
+        setDownloadsList([
+          { id: '1', customer_email: 'rohan@example.com', download_count: 3, last_download: new Date().toISOString(), design_id: 'd1', designs: { title: 'Gold Zari Butti Motif' } },
+          { id: '2', customer_email: 'neha@example.com', download_count: 1, last_download: new Date().toISOString(), design_id: 'd2', designs: { title: 'Traditional Rose Border' } }
+        ]);
+      } else {
+        const { data: dbDownloads, error: downloadsErr } = await supabase
+          .from('downloads')
+          .select(`
+            id,
+            customer_email,
+            download_count,
+            last_download,
+            design_id,
+            designs (title)
+          `)
+          .order('last_download', { ascending: false });
+
+        if (!downloadsErr && dbDownloads) {
+          setDownloadsList(dbDownloads);
+        }
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
       let serverMsg = 'Unknown error';
@@ -148,6 +173,18 @@ export default function AdminDashboard() {
       fetchStatsAndCategories();
     }
   }, [adminToken]);
+
+  // Lock body scroll when editing modal is open for stability
+  useEffect(() => {
+    if (editingDesign) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [editingDesign]);
 
   const handleDownloadInvoice = (order) => {
     const matchedDesign = designs.find((d) => d.id === order.design_id);
@@ -604,20 +641,26 @@ export default function AdminDashboard() {
               <strong className="text-slate-800 dark:text-slate-100 text-xl font-display font-bold">₹{stats.totalRevenue.toLocaleString()}</strong>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+          <button
+            onClick={() => { setActiveTab('orders'); setOrdersSubTab('approved'); }}
+            className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer text-left w-full focus:outline-none"
+          >
             <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-xl"><ShoppingBag size={24} /></div>
             <div>
-              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider">Completed Orders</span>
+              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Completed Orders</span>
               <strong className="text-slate-800 dark:text-slate-100 text-xl font-display font-bold">{stats.totalOrders}</strong>
             </div>
-          </div>
-          <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+          </button>
+          <button
+            onClick={() => setActiveTab('downloads')}
+            className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer text-left w-full focus:outline-none"
+          >
             <div className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 p-3 rounded-xl"><Users size={24} /></div>
             <div>
-              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider">Downloaded Mails</span>
+              <span className="text-slate-400 text-xs block font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Downloaded Mails</span>
               <strong className="text-slate-800 dark:text-slate-100 text-xl font-display font-bold">{stats.totalDownloadedEmails || 0}</strong>
             </div>
-          </div>
+          </button>
           <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
             <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-xl"><FileImage size={24} /></div>
             <div>
@@ -658,6 +701,15 @@ export default function AdminDashboard() {
           Customer Orders & UPI Approvals
         </button>
         <button
+          onClick={() => setActiveTab('invoices')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'invoices'
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
+            : 'bg-slate-100 dark:bg-dark-900 text-slate-655 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/80'
+            }`}
+        >
+          Invoices Download Center
+        </button>
+        <button
           onClick={() => setActiveTab('designs')}
           className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'designs'
             ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
@@ -665,6 +717,15 @@ export default function AdminDashboard() {
             }`}
         >
           Manage Uploaded Designs
+        </button>
+        <button
+          onClick={() => setActiveTab('downloads')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeTab === 'downloads'
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-600/10'
+            : 'bg-slate-100 dark:bg-dark-900 text-slate-655 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/80'
+            }`}
+        >
+          Downloaded Mails Log
         </button>
       </div>
 
@@ -1162,70 +1223,180 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {activeTab === 'invoices' && (
+        <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+            <DollarSign size={18} className="text-brand-500" />
+            <span>Invoices Download Center</span>
+          </h3>
+
+          {stats?.recentOrders?.filter(o => o.status === 'success').length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="pb-3 pr-4">Order Date</th>
+                    <th className="pb-3 pr-4">Invoice No</th>
+                    <th className="pb-3 pr-4">Customer Email</th>
+                    <th className="pb-3 pr-4">Design Title</th>
+                    <th className="pb-3 pr-4">Amount Paid</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
+                  {stats.recentOrders
+                    .filter((order) => order.status === 'success')
+                    .map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
+                        <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 pr-4 font-mono text-xs font-semibold text-brand-600 dark:text-brand-400">
+                          INV-{order.payment_id ? order.payment_id.toUpperCase() : 'MOCK'}
+                        </td>
+                        <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
+                          {order.email}
+                        </td>
+                        <td className="py-3 pr-4 text-slate-650 dark:text-slate-400">
+                          {order.title}
+                        </td>
+                        <td className="py-3 pr-4 font-mono font-bold text-slate-600 dark:text-slate-350">
+                          ₹{order.amount}
+                        </td>
+                        <td className="py-3 text-right">
+                          <button
+                            onClick={() => handleDownloadInvoice(order)}
+                            className="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 transition-colors cursor-pointer shadow-sm rounded-lg text-xs font-semibold"
+                          >
+                            <span>Download Invoice</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-450 dark:text-slate-400 italic">No approved orders/invoices available.</p>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'downloads' && (
+        <div className="bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
+          <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+            <Users size={18} className="text-brand-500" />
+            <span>Downloaded Mails Log</span>
+          </h3>
+
+          {downloadsList.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="pb-3 pr-4">Last Download Date</th>
+                    <th className="pb-3 pr-4">Customer Email</th>
+                    <th className="pb-3 pr-4">Design Title</th>
+                    <th className="pb-3 text-right">Downloads Count</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
+                  {downloadsList.map((download) => (
+                    <tr key={download.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
+                      <td className="py-3 pr-4 text-xs text-slate-550 dark:text-slate-400">
+                        {download.last_download ? (
+                          <>
+                            {new Date(download.last_download).toLocaleDateString()} {new Date(download.last_download).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </>
+                        ) : (
+                          <span className="text-slate-400 italic">N/A</span>
+                        )}
+                      </td>
+                      <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
+                        {download.customer_email}
+                      </td>
+                      <td className="py-3 pr-4 text-slate-650 dark:text-slate-400">
+                        {download.designs?.title || 'Deleted Design'}
+                      </td>
+                      <td className="py-3 text-right font-mono font-bold text-slate-650 dark:text-slate-350 pr-4">
+                        {download.download_count} times
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-455 dark:text-slate-400 italic">No downloaded emails logs found.</p>
+          )}
+        </div>
+      )}
+
       {/* Edit Design Overlay Modal */}
       {editingDesign && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-        <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h3 className="font-display font-black text-lg text-slate-900 dark:text-white">Update Weaving Design</h3>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in overflow-hidden">
+        <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl max-w-3xl w-full shadow-2xl space-y-4 max-h-[95vh] overflow-y-auto md:overflow-visible">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+            <h3 className="font-display font-black text-base text-slate-900 dark:text-white">Update Weaving Design</h3>
             <button onClick={cancelEdit} className="p-1.5 hover:bg-slate-100 dark:hover:bg-dark-950 rounded-lg text-slate-400 transition-colors">
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
-          <form onSubmit={handleUpdateDesign} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleUpdateDesign} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Left Column: General Information */}
+            <div className="space-y-3.5">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">General Information</h4>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Design Title</label>
                 <input
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (INR)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={editPrice}
-                  onChange={(e) => setEditPrice(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
-              <textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-              ></textarea>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
-                <select
-                  value={editCategory}
-                  onChange={(e) => setEditCategory(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (INR)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="flex items-center pt-5 pl-2">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                ></textarea>
+              </div>
+
+              <div className="flex items-center pl-1">
                 <input
                   type="checkbox"
                   id="editIsFeatured"
@@ -1233,123 +1404,124 @@ export default function AdminDashboard() {
                   onChange={(e) => setEditIsFeatured(e.target.checked)}
                   className="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500"
                 />
-                <label htmlFor="editIsFeatured" className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
+                <label htmlFor="editIsFeatured" className="ml-2 text-[10px] font-bold text-slate-500 dark:text-slate-455 uppercase tracking-wider cursor-pointer">
                   Featured (Best Seller)
                 </label>
               </div>
             </div>
 
-            {/* Weaving Specifications */}
-            <div className="border-t border-slate-150 dark:border-slate-800 pt-4 space-y-4">
-              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Weaving Specifications</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {/* Right Column: Weaving Specifications & Asset Uploads */}
+            <div className="space-y-3.5">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Specifications & Assets</h4>
+              
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Hooks</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Hooks</label>
                   <input
                     type="text"
                     value={editHooks}
                     onChange={(e) => setEditHooks(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    placeholder="e.g. 480 hooks"
+                    className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    placeholder="e.g. 480"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cards</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cards</label>
                   <input
                     type="text"
                     value={editCards}
                     onChange={(e) => setEditCards(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    placeholder="e.g. 960 cards"
+                    className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    placeholder="e.g. 960"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Box / Boxes</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Boxs</label>
                   <input
                     type="text"
                     value={editBox}
                     onChange={(e) => setEditBox(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    placeholder="e.g. 2 boxes"
+                    className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    placeholder="e.g. 2"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reed</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reed</label>
                   <input
                     type="text"
                     value={editReed}
                     onChange={(e) => setEditReed(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    placeholder="e.g. 100 steel reed"
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    placeholder="e.g. 100"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Supported Formats</label>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Formats</label>
                   <input
                     type="text"
                     value={editFormats}
                     onChange={(e) => setEditFormats(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                    placeholder="DST, PES, EXP, XXX"
+                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                    placeholder="DST, PES"
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Replace Preview Image (Optional)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEditPreviewFile(e.target.files[0])}
-                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                />
+              <div className="space-y-2 pt-1.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                    Replace Preview Image (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditPreviewFile(e.target.files[0])}
+                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                    Replace Original ZIP File (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".zip"
+                    onChange={(e) => setEditZipFile(e.target.files[0])}
+                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Replace Original ZIP File (Optional)
-                </label>
-                <input
-                  type="file"
-                  accept=".zip"
-                  onChange={(e) => setEditZipFile(e.target.files[0])}
-                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                />
+              {/* Actions footer inside right column */}
+              <div className="flex gap-3 pt-3 justify-end border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating}
+                  className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {updating ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
+                </button>
               </div>
-            </div>
-
-            <div className="flex gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 justify-end">
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-dark-800 dark:hover:bg-dark-750 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={updating}
-                className="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                {updating ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                ) : (
-                  <span>Save Changes</span>
-                )}
-              </button>
             </div>
           </form>
         </div>
       </div>
-    )
-  }
-
-    </div >
+    )}
+    </div>
   );
 }

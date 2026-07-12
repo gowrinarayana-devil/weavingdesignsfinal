@@ -5,12 +5,12 @@ export const generateInvoicePDF = (item, customerEmail, paymentId, orderId, amou
     return;
   }
 
-  const invoiceNo = paymentId ? `INV-${paymentId.toUpperCase()}` : `INV-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  const cleanPaymentId = (!paymentId || paymentId === 'simulated') ? '' : paymentId;
+  const invoiceNo = cleanPaymentId ? `INV-${cleanPaymentId.toUpperCase()}` : `INV-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   const displayDate = date ? new Date(date).toLocaleDateString() : new Date().toLocaleDateString();
   const hooks = item.hooks ? item.hooks.replace(/hooks/i, '').trim() : '560';
   const cards = item.cards ? item.cards.replace(/cards/i, '').trim() : '700';
   const epi = item.reed ? item.reed.replace(/reed|steel/ig, '').trim() : '100';
-  const ppi = item.box ? item.box.replace(/box|boxes/ig, '').trim() : '72';
   const harness = 'SINGLE';
 
   const htmlContent = `
@@ -207,7 +207,7 @@ export const generateInvoicePDF = (item, customerEmail, paymentId, orderId, amou
           <h3>Invoice Date:</h3>
           <p>${displayDate}</p>
           <h3 style="margin-top: 14px;">Payment Method:</h3>
-          <p>UPI QR (Reference UTR: ${paymentId || 'N/A'})</p>
+          <p>UPI QR (Reference UTR: ${cleanPaymentId || 'N/A'})</p>
         </div>
       </div>
 
@@ -227,7 +227,6 @@ export const generateInvoicePDF = (item, customerEmail, paymentId, orderId, amou
                 <span class="spec-item"><strong>HOOKS:</strong> ${hooks}</span>
                 <span class="spec-item"><strong>CARDS:</strong> ${cards}</span>
                 <span class="spec-item"><strong>REED:</strong> ${epi}</span>
-                <span class="spec-item"><strong>BOXS:</strong> ${ppi}</span>
               </div>
             </td>
             <td style="text-align: right; font-weight: 700; color: #0f172a;">₹${amount}</td>

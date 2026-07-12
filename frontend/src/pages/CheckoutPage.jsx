@@ -42,6 +42,7 @@ export default function CheckoutPage() {
   const [copied, setCopied] = useState(false);
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [submittedPaymentId, setSubmittedPaymentId] = useState('');
 
   // Scroll to top when payment step or order state changes
   useEffect(() => {
@@ -170,6 +171,7 @@ export default function CheckoutPage() {
       );
 
       if (verifyRes.data.success) {
+        setSubmittedPaymentId(finalPaymentId);
         // Capture items to download before clearing cart
         const itemsToDownload = [...checkoutItems];
         setPurchasedItems(itemsToDownload);
@@ -252,7 +254,7 @@ export default function CheckoutPage() {
                       onClick={() => generateInvoicePDF(
                         item, 
                         email, 
-                        item.paymentId || upiOrderDetails?.payment_id || 'simulated', 
+                        submittedPaymentId || item.paymentId || upiOrderDetails?.payment_id || 'simulated', 
                         upiOrderDetails?.order_id || 'simulated', 
                         item.price, 
                         new Date().toISOString()
@@ -309,7 +311,7 @@ export default function CheckoutPage() {
             Go to Downloads Page
           </Link>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%2520Designs,%2520I%2520need%2520support%2520regarding%2520my%2520purchase."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support%20regarding%20my%20purchase."
             target="_blank"
             rel="noopener noreferrer"
             className="w-full block border border-emerald-500/20 dark:border-emerald-500/10 text-emerald-600 dark:text-emerald-450 bg-emerald-500/5 hover:bg-emerald-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center"
