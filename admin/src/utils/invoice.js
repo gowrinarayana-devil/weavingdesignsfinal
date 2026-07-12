@@ -224,11 +224,10 @@ export const generateInvoicePDF = (item, customerEmail, paymentId, orderId, amou
               <div style="font-weight: bold; font-size: 14px; color: #0f172a;">${item.title}</div>
               <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Category: ${item.category}</div>
               <div class="spec-list">
-                <span class="spec-item"><strong>Hooks:</strong> ${hooks}</span>
-                <span class="spec-item"><strong>Cards:</strong> ${cards}</span>
-                <span class="spec-item"><strong>Reed:</strong> ${epi}</span>
-                <span class="spec-item"><strong>Boxs:</strong> ${ppi}</span>
-                <span class="spec-item"><strong>Harness:</strong> ${harness}</span>
+                <span class="spec-item"><strong>HOOKS:</strong> ${hooks}</span>
+                <span class="spec-item"><strong>CARDS:</strong> ${cards}</span>
+                <span class="spec-item"><strong>REED:</strong> ${epi}</span>
+                <span class="spec-item"><strong>BOXS:</strong> ${ppi}</span>
               </div>
             </td>
             <td style="text-align: right; font-weight: 700; color: #0f172a;">₹${amount}</td>
