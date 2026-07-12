@@ -6,7 +6,7 @@ import { LogOut, Sun, Moon, LayoutDashboard, Scissors } from 'lucide-react';
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   // Sync theme to DOM class
   useEffect(() => {

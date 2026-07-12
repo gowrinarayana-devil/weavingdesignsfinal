@@ -203,7 +203,7 @@ export default function DesignDetail() {
           },
           {
             "@type": "PropertyValue",
-            "name": "Box/Boxes",
+            "name": "Boxs",
             "value": design.box || 'N/A'
           },
           {
@@ -327,7 +327,7 @@ export default function DesignDetail() {
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.cards || 'N/A'}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Box / Boxes</span>
+                <span className="text-[10px] text-slate-650 dark:text-slate-400 block uppercase font-semibold">Boxs</span>
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{design.box || 'N/A'}</span>
               </div>
               <div className="bg-slate-100/50 dark:bg-dark-900/60 p-3 rounded-2xl border border-slate-200/20 dark:border-slate-800/40">

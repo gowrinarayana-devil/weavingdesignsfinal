@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
+import { generateInvoicePDF } from '../utils/invoice';
 import { LayoutDashboard, DollarSign, ShoppingBag, Users, FileImage, Upload, Plus, CheckCircle2, AlertCircle, Edit, Trash2, X, Clock, Check, XCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -147,6 +148,19 @@ export default function AdminDashboard() {
       fetchStatsAndCategories();
     }
   }, [adminToken]);
+
+  const handleDownloadInvoice = (order) => {
+    const matchedDesign = designs.find((d) => d.id === order.design_id);
+    const item = {
+      title: order.title,
+      category: matchedDesign?.categories?.name || 'Weaving',
+      hooks: matchedDesign?.hooks || '',
+      cards: matchedDesign?.cards || '',
+      reed: matchedDesign?.reed || '',
+      box: matchedDesign?.box || ''
+    };
+    generateInvoicePDF(item, order.email, order.payment_id, order.order_id, order.amount, order.created_at);
+  };
 
   // Create Category Handler
   const handleCreateCategory = async (e) => {
@@ -1049,7 +1063,17 @@ export default function AdminDashboard() {
                             </button>
                           </>
                         ) : (
-                          <span className="text-slate-400 text-xs italic">Completed</span>
+                          <div className="flex items-center justify-end gap-2 text-right">
+                            {order.status === 'success' && (
+                              <button
+                                onClick={() => handleDownloadInvoice(order)}
+                                className="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-900 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-dark-950 px-2.5 py-1 transition-colors cursor-pointer shadow-sm rounded-lg text-xs font-semibold"
+                              >
+                                <span>Invoice</span>
+                              </button>
+                            )}
+                            <span className="text-slate-400 text-xs italic">{order.status === 'success' ? '' : 'Rejected'}</span>
+                          </div>
                         )}
                       </td>
                     </tr>

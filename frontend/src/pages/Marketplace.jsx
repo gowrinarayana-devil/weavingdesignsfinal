@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase, isDummyClient } from '../supabase';
-import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart, Eye, ShoppingCart, CheckCircle2, X, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { updateSEO } from '../utils/seo';
 import { slugify } from '../utils/slugify';
@@ -17,7 +17,11 @@ const MOCK_DESIGNS = [
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/fa37b61c-ee2d-4158-8e4a-16732b2e0893.jpg",
     category: "BUTTIS",
     is_featured: false,
-    created_at: "2026-07-06T15:41:30.206147+00:00"
+    created_at: "2026-07-06T15:41:30.206147+00:00",
+    hooks: "480 hooks",
+    cards: "1120 cards",
+    box: "2 boxes",
+    reed: "92 steel reed"
   },
   {
     id: "75e19932-cfdd-4bf7-99ee-ec0a83a38365",
@@ -27,7 +31,11 @@ const MOCK_DESIGNS = [
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/75e19932-cfdd-4bf7-99ee-ec0a83a38365.jpg",
     category: "BUTTIS",
     is_featured: false,
-    created_at: "2026-07-06T15:29:57.401929+00:00"
+    created_at: "2026-07-06T15:29:57.401929+00:00",
+    hooks: "480 hooks",
+    cards: "688 cards",
+    box: "1 box",
+    reed: "100 steel reed"
   },
   {
     id: "79311a0b-fae0-456f-ab77-20927d842ad7",
@@ -37,7 +45,11 @@ const MOCK_DESIGNS = [
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/79311a0b-fae0-456f-ab77-20927d842ad7.jpg",
     category: "BUTTIS",
     is_featured: false,
-    created_at: "2026-07-06T15:19:00.499275+00:00"
+    created_at: "2026-07-06T15:19:00.499275+00:00",
+    hooks: "480 hooks",
+    cards: "552 cards",
+    box: "2 boxes",
+    reed: "100 reed"
   },
   {
     id: "80590932-eedd-432d-9f37-55fb4e230a00",
@@ -47,7 +59,11 @@ const MOCK_DESIGNS = [
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/80590932-eedd-432d-9f37-55fb4e230a00.jpg",
     category: "border",
     is_featured: false,
-    created_at: "2026-07-06T15:06:59.096173+00:00"
+    created_at: "2026-07-06T15:06:59.096173+00:00",
+    hooks: "240 hooks",
+    cards: "360 cards",
+    box: "1 box",
+    reed: "84 steel reed"
   },
   {
     id: "4cca6f42-dda9-496f-9276-f80e5a7feceb",
@@ -57,7 +73,11 @@ const MOCK_DESIGNS = [
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/4cca6f42-dda9-496f-9276-f80e5a7feceb.jpg",
     category: "border",
     is_featured: false,
-    created_at: "2026-07-06T14:48:57.472563+00:00"
+    created_at: "2026-07-06T14:48:57.472563+00:00",
+    hooks: "240 hooks",
+    cards: "400 cards",
+    box: "1 box",
+    reed: "84 steel reed"
   },
   {
     id: "201228af-76c4-46f8-bb1c-c1cc54c8fa13",
@@ -67,7 +87,11 @@ const MOCK_DESIGNS = [
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/201228af-76c4-46f8-bb1c-c1cc54c8fa13.jpg",
     category: "border",
     is_featured: false,
-    created_at: "2026-07-06T04:10:45.085149+00:00"
+    created_at: "2026-07-06T04:10:45.085149+00:00",
+    hooks: "240 hooks",
+    cards: "398 cards",
+    box: "1 box",
+    reed: "84 steel reed"
   }
 ];
 
@@ -110,36 +134,14 @@ export default function Marketplace() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest'); // price-asc, price-desc, popularity, newest
   const [loading, setLoading] = useState(false);
-
-  // Helper to determine initial items per page based on viewport width
-  const getInitialItemsPerPage = () => {
-    if (typeof window === 'undefined') return 12;
-    if (window.innerWidth >= 1024) return 12;
-    if (window.innerWidth >= 640) return 8;
-    return 6;
-  };
+  const navigate = useNavigate();
 
   // Pagination states
   const currentPage = (() => {
     const savedPage = searchParams.get('page');
     return savedPage ? parseInt(savedPage, 10) : 1;
   })();
-  const [itemsPerPage, setItemsPerPage] = useState(getInitialItemsPerPage);
-
-  // Maintain rows based on responsive grid columns (2 rows on desktop/tablet, 3 rows on mobile)
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setItemsPerPage(12); // 4 cols * 3 rows (desktop)
-      } else if (window.innerWidth >= 640) {
-        setItemsPerPage(8);  // 4 cols * 2 rows (tablet)
-      } else {
-        setItemsPerPage(6);  // 2 cols * 3 rows (mobile)
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   const setSelectedCategory = (cat) => {
     setSearchParams(prev => {
@@ -243,7 +245,7 @@ export default function Marketplace() {
     const websiteSchema = {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Weaving Designs",
+      "name": "WEAVING DESIGNS",
       "url": "https://www.weavingdesigns.in",
       "potentialAction": {
         "@type": "SearchAction",
@@ -255,14 +257,9 @@ export default function Marketplace() {
     const organizationSchema = {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Weaving Designs",
+      "name": "WEAVING DESIGNS",
       "url": "https://www.weavingdesigns.in",
-      "logo": "https://www.weavingdesigns.in/logo.jpg",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+91-9052572363",
-        "contactType": "customer service"
-      }
+      "logo": "https://www.weavingdesigns.in/logo.jpg"
     };
 
     const itemListSchema = {
@@ -280,7 +277,7 @@ export default function Marketplace() {
     };
 
     updateSEO({
-      title: 'Premium Weaving & Embroidery Designs Marketplace',
+      title: 'WEAVING DESIGNS - Premium Weaving & Embroidery Designs Marketplace',
       description: 'Explore and download premium Jacquard weaving designs, border styles, motifs, and custom embroidery layouts with full color charts and machine config specs.',
       image: designs[0]?.preview_image_url || designs[0]?.image_url || `${window.location.origin}/logo.jpg`,
       url: window.location.href,
@@ -288,6 +285,15 @@ export default function Marketplace() {
       schema: [websiteSchema, organizationSchema, itemListSchema]
     });
   }, [designs]);
+
+  // Dynamically update document title on search query changes
+  useEffect(() => {
+    if (search.trim()) {
+      document.title = `Search: "${search}" | WEAVING DESIGNS`;
+    } else {
+      document.title = 'WEAVING DESIGNS - Premium Weaving & Embroidery Designs Marketplace';
+    }
+  }, [search]);
 
   // Filter and Sort designs
   const filteredDesigns = designs
@@ -382,10 +388,10 @@ export default function Marketplace() {
                   aria-label="Sort designs list by"
                   className="w-full bg-slate-100/80 dark:bg-dark-950/80 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all appearance-none pr-10 font-medium text-slate-800 dark:text-slate-100"
                 >
-                  <option value="newest">Newest Additions</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="popularity">Popularity (Downloads)</option>
+                  <option value="newest" className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">Newest Additions</option>
+                  <option value="price-asc" className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">Price: Low to High</option>
+                  <option value="price-desc" className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">Price: High to Low</option>
+                  <option value="popularity" className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">Popularity (Downloads)</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
                   <ArrowUpDown size={14} />
@@ -443,125 +449,191 @@ export default function Marketplace() {
         ) : displayedDesigns.length > 0 ? (
           <div className="space-y-8">
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3.5 sm:gap-5">
-              {displayedDesigns.map((design, index) => (
-                <div 
-                  key={design.id} 
-                  className="group relative bg-white dark:bg-dark-900 border border-slate-100 dark:border-slate-800/40 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl dark:hover:shadow-brand-500/5 hover:border-brand-500/20 dark:hover:border-brand-500/20 transition-all duration-300 flex flex-col h-full"
-                >
-                  
-                  {/* Design Image Preview */}
-                  <Link to={`/design/${design.id}/${slugify(design.title)}`} className="relative block overflow-hidden aspect-square bg-slate-100 dark:bg-dark-950">
-                    {/* Visual protection watermark banner */}
-                    <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.03)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.03)_50%,rgba(0,0,0,0.03)_75%,transparent_75%,transparent)] bg-[size:30px_30px] pointer-events-none z-10 opacity-60"></div>
-                    
-                    {/* Image overlay gradient for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
+              {displayedDesigns.map((design, index) => {
+                const hooksVal = design.hooks ? design.hooks.replace(/hooks/i, '').trim() : '560';
+                const cardsVal = design.cards ? design.cards.replace(/cards/i, '').trim() : '700';
+                const reedVal = design.reed ? design.reed.replace(/reed|steel/ig, '').trim() : '100';
+                const ppiVal = design.box ? design.box.replace(/box|boxes/ig, '').trim() : '72';
 
-                    <img
-                      src={getOptimizedImageUrl(design.preview_image_url || design.image_url, 400, 75)}
-                      alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
-                      loading={index < 4 ? "eager" : "lazy"}
-                      fetchPriority={index < 4 ? "high" : "low"}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 no-select"
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
+                return (
+                  <div 
+                    key={design.id} 
+                    className="group relative bg-white dark:bg-dark-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl dark:hover:shadow-brand-500/5 hover:border-brand-500/20 dark:hover:border-brand-500/20 transition-all duration-300 flex flex-col h-full"
+                  >
                     
-                    {/* Featured Tag */}
-                    {design.is_featured && (
-                      <span className="absolute top-2.5 left-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider shadow-md shadow-orange-500/20 z-20">
-                        Popular
+                    {/* Design Image Preview */}
+                    <Link 
+                      to={`/design/${design.id}/${slugify(design.title)}`}
+                      className="relative block overflow-hidden aspect-square bg-slate-100 dark:bg-dark-950 cursor-pointer"
+                    >
+                      {/* Visual protection watermark banner */}
+                      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.03)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.03)_50%,rgba(0,0,0,0.03)_75%,transparent_75%,transparent)] bg-[size:30px_30px] pointer-events-none z-10 opacity-60"></div>
+                      
+                      {/* Image overlay gradient for depth */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
+
+                      <img
+                        src={getOptimizedImageUrl(design.preview_image_url || design.image_url, 400, 75)}
+                        alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
+                        loading={index < 4 ? "eager" : "lazy"}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 no-select"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                      />
+                      
+                      {/* Category Label Overlay */}
+                      <span className="absolute bottom-2.5 left-2.5 bg-slate-900/60 backdrop-blur-[4px] text-slate-200 px-2 py-0.5 rounded-md text-[9px] font-semibold tracking-wide border border-white/5 z-20">
+                        {design.category}
                       </span>
-                    )}
+                    </Link>
 
-                    {/* Category Label Overlay */}
-                    <span className="absolute bottom-2.5 left-2.5 bg-slate-900/60 backdrop-blur-[4px] text-slate-200 px-2 py-0.5 rounded-md text-[9px] font-medium tracking-wide border border-white/5 z-20">
-                      {design.category}
-                    </span>
-                  </Link>
+                    {/* Card Metadata */}
+                    <div className="p-3 flex flex-col flex-grow">
+                      <h2 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-red-800 line-clamp-1 transition-colors text-sm cursor-pointer">
+                        <Link to={`/design/${design.id}/${slugify(design.title)}`}>
+                          {design.title}
+                        </Link>
+                      </h2>
+                      
+                      {/* WEAVING DESIGNS Certified Badge */}
+                      <span className="inline-block bg-red-800/10 text-red-850 dark:bg-red-950/20 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-md mt-1 self-start border border-red-800/20">
+                        ✓ WEAVING DESIGNS Certified
+                      </span>
 
-                  {/* Card Metadata */}
-                  <div className="p-2.5 sm:p-3.5 flex flex-col flex-grow">
-                    <h2 className="font-display font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-500 line-clamp-1 transition-colors text-xs sm:text-sm">
-                      <Link to={`/design/${design.id}/${slugify(design.title)}`}>{design.title}</Link>
-                    </h2>
-                    <p className="text-slate-600 dark:text-slate-300 text-[10px] sm:text-xs mt-1 line-clamp-2 leading-relaxed flex-grow whitespace-pre-wrap">
-                      {design.description}
-                    </p>
-                    
-                    {/* Action Bar */}
-                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/40 pt-2.5 mt-2.5 gap-1.5">
-                      <div>
-                        <span className="font-display font-bold text-teal-600 dark:text-teal-400 text-xs sm:text-sm md:text-base leading-none">
+                      {/* Price Section */}
+                      <div className="mt-2 flex items-baseline gap-1.5">
+                        <span className="font-display font-bold text-teal-600 dark:text-teal-400 text-base leading-none">
                           ₹{design.price}
+                        </span>
+                        <span className="text-slate-400 dark:text-slate-500 line-through text-[11px] font-medium">
+                          ₹{Math.round(design.price * 1.33)}
                         </span>
                       </div>
                       
-                      {isInCart(design.id) ? (
+                      {/* Spec badges */}
+                      <div className="flex flex-wrap gap-1 mt-2.5">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-250/20 dark:bg-emerald-955/20 dark:text-emerald-450 dark:border-emerald-900/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          Hooks: {hooksVal}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-250/20 dark:bg-blue-955/20 dark:text-blue-450 dark:border-blue-900/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                          Cards: {cardsVal}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-250/20 dark:bg-purple-955/20 dark:text-purple-450 dark:border-purple-900/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                          Reed: {reedVal}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-750 border border-amber-250/20 dark:bg-amber-955/20 dark:text-amber-450 dark:border-amber-900/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          Boxs: {ppiVal}
+                        </span>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="grid grid-cols-2 gap-1.5 mt-3.5 border-t border-slate-105 dark:border-slate-800/40 pt-2.5 flex-grow justify-end">
                         <Link
-                          to="/cart"
-                          className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-semibold transition-all text-center whitespace-nowrap shadow-sm"
+                          to={`/design/${design.id}/${slugify(design.title)}`}
+                          className="flex items-center justify-center gap-1 bg-red-800 hover:bg-red-900 text-white py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all text-center"
                         >
-                          Added
+                          <Eye size={12} />
+                          <span>View Details</span>
                         </Link>
-                      ) : (
-                        <button
-                          onClick={() => addToCart(design)}
-                          className="bg-gradient-to-r from-brand-500 to-teal-600 hover:from-brand-600 hover:to-teal-700 text-white px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-semibold shadow-md shadow-brand-500/15 hover:shadow-lg hover:shadow-brand-500/20 transform hover:scale-[1.02] transition-all text-center whitespace-nowrap"
-                        >
-                          Add
-                        </button>
-                      )}
+                        
+                        {isInCart(design.id) ? (
+                          <Link
+                            to="/cart"
+                            className="flex items-center justify-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 hover:bg-emerald-500/25 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all text-center"
+                          >
+                            <CheckCircle2 size={12} />
+                            <span>Added</span>
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => addToCart(design)}
+                            className="flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-dark-850 dark:hover:bg-dark-800 dark:text-slate-205 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer"
+                          >
+                            <ShoppingCart size={12} />
+                            <span>Add to Cart</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center space-x-1 sm:space-x-2 mt-12 py-6 border-t border-slate-100 dark:border-slate-900/60">
-                <button
-                  onClick={() => setCurrentPage(activePage - 1)}
-                  disabled={activePage === 1}
-                  className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                    activePage === 1
-                      ? 'bg-slate-100 dark:bg-dark-900/40 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-transparent'
-                      : 'bg-white dark:bg-dark-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-dark-800 hover:scale-[1.02] shadow-sm'
-                  }`}
-                >
-                  &larr; Previous
-                </button>
-
-                {getPageNumbers().map((page) => {
-                  const isActive = activePage === page;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                        isActive
-                          ? 'bg-gradient-to-r from-brand-500 to-teal-600 text-white shadow-md shadow-brand-500/25 scale-105 border border-brand-500'
-                          : 'bg-white dark:bg-dark-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-dark-800 hover:scale-[1.02] shadow-sm'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => setCurrentPage(activePage + 1)}
-                  disabled={activePage === totalPages}
-                  className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                    activePage === totalPages
-                      ? 'bg-slate-100 dark:bg-dark-900/40 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-transparent'
-                      : 'bg-white dark:bg-dark-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-dark-800 hover:scale-[1.02] shadow-sm'
-                  }`}
-                >
-                  Next &rarr;
-                </button>
+            {/* Showing Count and Per Page Dropdown & Pagination block */}
+            <div className="bg-white dark:bg-dark-900 border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 shadow-sm">
+              <div className="flex flex-col sm:flex-row items-center gap-3 text-sm text-slate-600 dark:text-slate-350">
+                <div>
+                  Showing <strong className="font-bold text-slate-850 dark:text-white">{(activePage - 1) * itemsPerPage + 1}</strong> to <strong className="font-bold text-slate-850 dark:text-white">{Math.min(activePage * itemsPerPage, filteredDesigns.length)}</strong> of <strong className="font-bold text-slate-850 dark:text-white">{filteredDesigns.length}</strong> designs
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold whitespace-nowrap">Per page:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(parseInt(e.target.value, 10));
+                      setCurrentPage(1);
+                    }}
+                    className="bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-red-800 text-slate-800 dark:text-slate-200"
+                  >
+                    <option value={12} className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">12</option>
+                    <option value={24} className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">24</option>
+                    <option value={50} className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">50</option>
+                    <option value={100} className="bg-white dark:bg-dark-900 text-slate-800 dark:text-slate-100">100</option>
+                  </select>
+                </div>
               </div>
-            )}
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setCurrentPage(activePage - 1)}
+                    disabled={activePage === 1}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      activePage === 1
+                        ? 'bg-slate-50 dark:bg-dark-950/20 text-slate-400 dark:text-slate-650 border-transparent cursor-not-allowed'
+                        : 'bg-white dark:bg-dark-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer'
+                    }`}
+                  >
+                    &lt; Previous
+                  </button>
+                  
+                  {getPageNumbers().map((page) => {
+                    const isActive = activePage === page;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-red-800 text-white shadow-sm border border-red-800'
+                            : 'bg-white dark:bg-dark-900 border border-slate-200 dark:border-slate-800 text-slate-750 dark:text-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setCurrentPage(activePage + 1)}
+                    disabled={activePage === totalPages}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      activePage === totalPages
+                        ? 'bg-slate-50 dark:bg-dark-950/20 text-slate-400 dark:text-slate-650 border-transparent cursor-not-allowed'
+                        : 'bg-white dark:bg-dark-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer'
+                    }`}
+                  >
+                    Next &gt;
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="text-center py-16 bg-white dark:bg-dark-900/40 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">

@@ -4,9 +4,10 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft, Download } from 'lucide-react';
+import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft, Download, FileText } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { updateSEO } from '../utils/seo';
+import { generateInvoicePDF } from '../utils/invoice';
 
 export default function CheckoutPage() {
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [success, setSuccess] = useState(false);
   
   // State for UPI checkout
@@ -85,10 +87,11 @@ export default function CheckoutPage() {
 
   const handlePayment = async () => {
     setError('');
+    setEmailError('');
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email.trim())) {
-      setError('Please enter a valid billing email address.');
+      setEmailError('Please enter a valid billing email address.');
       return;
     }
     
@@ -244,20 +247,37 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => triggerAutomaticDownload(item.id, email)}
-                    disabled={downloadingId === item.id}
-                    className="flex items-center justify-center space-x-1.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2 px-3 rounded-lg text-xs transition-all cursor-pointer flex-shrink-0 shadow-sm shadow-brand-600/5"
-                  >
-                    {downloadingId === item.id ? (
-                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-white"></div>
-                    ) : (
-                      <>
-                        <Download size={13} />
-                        <span>Download ZIP</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="flex gap-2 items-center flex-shrink-0">
+                    <button
+                      onClick={() => generateInvoicePDF(
+                        item, 
+                        email, 
+                        item.paymentId || upiOrderDetails?.payment_id || 'simulated', 
+                        upiOrderDetails?.order_id || 'simulated', 
+                        item.price, 
+                        new Date().toISOString()
+                      )}
+                      className="flex items-center justify-center space-x-1 bg-red-800/10 hover:bg-red-800/20 text-red-800 dark:text-red-450 border border-red-800/20 font-semibold py-2 px-3 rounded-lg text-xs transition-all cursor-pointer"
+                    >
+                      <FileText size={13} />
+                      <span>Invoice</span>
+                    </button>
+
+                    <button
+                      onClick={() => triggerAutomaticDownload(item.id, email)}
+                      disabled={downloadingId === item.id}
+                      className="flex items-center justify-center space-x-1.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2 px-3 rounded-lg text-xs transition-all cursor-pointer shadow-sm shadow-brand-600/5"
+                    >
+                      {downloadingId === item.id ? (
+                        <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-white"></div>
+                      ) : (
+                        <>
+                          <Download size={13} />
+                          <span>Download ZIP</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -289,10 +309,10 @@ export default function CheckoutPage() {
             Go to Downloads Page
           </Link>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support%20with%20my%20recent%20purchase."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%2520Designs,%2520I%2520need%2520support%2520regarding%2520my%2520purchase."
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full block border border-emerald-500/20 dark:border-emerald-500/10 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 font-semibold py-3 rounded-xl transition-all text-sm"
+            className="w-full block border border-emerald-500/20 dark:border-emerald-500/10 text-emerald-600 dark:text-emerald-450 bg-emerald-500/5 hover:bg-emerald-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center"
           >
             Contact Support via WhatsApp
           </a>
@@ -357,12 +377,12 @@ export default function CheckoutPage() {
             Track Download Status
           </Link>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20just%20submitted%20my%20UTR%20reference%20and%20need%20quick%20approval."
+            href={`https://wa.me/919052572363?text=${encodeURIComponent("Hi Weaving Designs, I have submitted a transaction and need manual UTR approval. UTR: " + utr)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full block border border-amber-500/25 dark:border-amber-500/10 text-amber-600 dark:text-amber-450 bg-amber-500/5 hover:bg-amber-500/10 font-semibold py-3 rounded-xl transition-all text-sm"
+            className="w-full block border border-amber-500/25 dark:border-amber-500/10 text-amber-600 dark:text-amber-450 bg-amber-500/5 hover:bg-amber-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center"
           >
-            Contact Support (Fast Approval)
+            Contact Support for Approval
           </a>
           <Link
             to="/"
@@ -483,6 +503,12 @@ export default function CheckoutPage() {
                       </>
                     )}
                   </button>
+                  {emailError && (
+                    <div className="mt-3 text-xs text-red-650 dark:text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-xl font-medium flex items-center gap-1.5 animate-fade-in">
+                      <AlertCircle size={14} className="flex-shrink-0" />
+                      <span>{emailError}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { Download, AlertCircle, FileArchive, Search, Clock } from 'lucide-react';
+import { Download, AlertCircle, FileArchive, Search, Clock, FileText } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { updateSEO } from '../utils/seo';
+import { generateInvoicePDF } from '../utils/invoice';
 
 export default function DownloadsPage() {
   useEffect(() => {
@@ -66,6 +67,11 @@ export default function DownloadsPage() {
             title,
             preview_image_url,
             category_id,
+            hooks,
+            cards,
+            box,
+            reed,
+            formats,
             categories (name)
           )
         `)
@@ -84,6 +90,11 @@ export default function DownloadsPage() {
             title: design.title,
             category: design.categories?.name || 'Border',
             preview_image_url: design.preview_image_url,
+            hooks: design.hooks,
+            cards: design.cards,
+            reed: design.reed,
+            box: design.box,
+            formats: design.formats,
             price: order.amount,
             orderDate: new Date(order.created_at).toLocaleDateString(),
             paymentId: order.payment_id,
@@ -179,16 +190,16 @@ export default function DownloadsPage() {
               <span>Custom Design Support</span>
             </h3>
             <p className="text-xs text-slate-400 mb-4 leading-normal">
-              Need a custom layout, sizing adjustment, or want to create a brand new design? Tap below to chat.
+              Need a custom layout, sizing adjustment, or want to create a brand new design? Tap below to chat with us.
             </p>
           </div>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20want%20to%20request%20a%20custom%20weaving%20design."
+            href="https://wa.me/919052572363?text=Hi%20Weaving%2520Designs,%2520I'm%2520interested%252520in%252520a%252520custom%252520design."
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-dark-850 dark:hover:bg-dark-800 text-slate-800 dark:text-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center flex items-center justify-center gap-1.5 border border-slate-200/30 dark:border-slate-800/80 cursor-pointer"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center flex items-center justify-center gap-1.5 border border-emerald-500/20 cursor-pointer"
           >
-            Create My Own Design
+            Chat for Custom Design
           </a>
         </div>
       </div>
@@ -246,20 +257,37 @@ export default function DownloadsPage() {
                   </div>
 
                   {design.status === 'success' ? (
-                    <button
-                      onClick={() => handleDownload(design.id)}
-                      disabled={downloadingId === design.id}
-                      className="flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-brand-600/10 transition-all cursor-pointer"
-                    >
-                      {downloadingId === design.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                      ) : (
-                        <>
-                          <Download size={14} />
-                          <span>Download ZIP</span>
-                        </>
-                      )}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => generateInvoicePDF(
+                          design,
+                          searchedEmail,
+                          design.paymentId,
+                          null,
+                          design.price,
+                          design.orderDate
+                        )}
+                        className="flex items-center justify-center space-x-1.5 bg-red-800/10 hover:bg-red-800/20 text-red-800 dark:text-red-450 border border-red-800/20 font-semibold py-2 px-3 rounded-xl text-xs transition-all cursor-pointer"
+                      >
+                        <FileText size={13} />
+                        <span>Invoice</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDownload(design.id)}
+                        disabled={downloadingId === design.id}
+                        className="flex items-center justify-center space-x-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-500/50 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-brand-600/10 transition-all cursor-pointer"
+                      >
+                        {downloadingId === design.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        ) : (
+                          <>
+                            <Download size={14} />
+                            <span>Download ZIP</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   ) : design.status === 'pending' ? (
                     <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-3 py-2 rounded-xl text-xs font-semibold select-none">
                       <Clock size={13} className="animate-pulse" />

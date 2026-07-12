@@ -1,0 +1,23 @@
+{
+  "short_name": "WEAVINGDESIGNS",
+  "name": "WEAVING DESIGNS",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0b1329",
+  "theme_color": "#0b1329",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -29,7 +29,11 @@ export const updateSEO = (titleOrConfig, description, image, url, type = 'websit
   }
 
   // Update document title
-  document.title = title ? `${title} | Weaving Designs` : 'Weaving Designs - Custom Jacquard & Embroidery Designs Marketplace';
+  if (title) {
+    document.title = title.toLowerCase().includes('weaving designs') ? title : `${title} | WEAVING DESIGNS`;
+  } else {
+    document.title = 'WEAVING DESIGNS - Custom Jacquard & Embroidery Designs Marketplace';
+  }
 
   // Helper to set meta tag attributes dynamically
   const setMetaTag = (attrName, attrVal, content) => {
@@ -53,7 +57,7 @@ export const updateSEO = (titleOrConfig, description, image, url, type = 'websit
   setMetaTag('name', 'description', actualDesc);
 
   // Open Graph / Facebook
-  setMetaTag('property', 'og:title', title ? `${title} | Weaving Designs` : 'Weaving Designs');
+  setMetaTag('property', 'og:title', title ? `${title} | WEAVING DESIGNS` : 'WEAVING DESIGNS');
   setMetaTag('property', 'og:description', actualDesc);
   setMetaTag('property', 'og:type', finalType);
   setMetaTag('property', 'og:url', finalUrl || window.location.href);
@@ -66,7 +70,7 @@ export const updateSEO = (titleOrConfig, description, image, url, type = 'websit
 
   // Twitter Cards
   setMetaTag('name', 'twitter:card', finalImage ? 'summary_large_image' : 'summary');
-  setMetaTag('name', 'twitter:title', title ? `${title} | Weaving Designs` : 'Weaving Designs');
+  setMetaTag('name', 'twitter:title', title ? `${title} | WEAVING DESIGNS` : 'WEAVING DESIGNS');
   setMetaTag('name', 'twitter:description', actualDesc);
   if (finalImage) {
     setMetaTag('name', 'twitter:image', finalImage);

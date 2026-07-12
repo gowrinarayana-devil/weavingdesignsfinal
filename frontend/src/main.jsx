@@ -7,6 +7,17 @@ import './index.css'
 import axios from 'axios'
 import { Capacitor } from '@capacitor/core'
 
+// Global PWA Installation Event Hook
+if (typeof window !== 'undefined') {
+  window.deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    console.log('Capture PWA beforeinstallprompt event');
+    window.dispatchEvent(new CustomEvent('pwa-installable'));
+  });
+}
+
 let apiURL = import.meta.env.VITE_API_URL || ''
 if (apiURL) {
   apiURL = apiURL.trim().replace(/\/+$/, '')
@@ -49,3 +60,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </QueryClientProvider>
   </React.StrictMode>,
 )
+
+// Register PWA Service Worker in web environment
+if ('serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => console.log('PWA Service Worker registered:', reg.scope))
+      .catch((err) => console.error('PWA Service Worker registration failed:', err));
+  });
+}
+

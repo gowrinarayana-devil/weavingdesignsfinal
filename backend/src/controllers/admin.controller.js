@@ -264,7 +264,8 @@ exports.getDashboardStats = async (req, res) => {
       name: profileMap[o.user_id]?.name || 'Weaving Customer',
       email: o.customer_email || profileMap[o.user_id]?.email || 'N/A',
       payment_id: o.payment_id,
-      order_id: o.order_id
+      order_id: o.order_id,
+      design_id: o.design_id
     }));
 
     // Process monthly revenue metrics (Last 6 months)
