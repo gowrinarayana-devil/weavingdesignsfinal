@@ -1,27 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Sun, Moon, LayoutDashboard, Scissors } from 'lucide-react';
+import { LogOut, LayoutDashboard, Scissors } from 'lucide-react';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
-  // Sync theme to DOM class
+  // Ensure theme is always light and clean up legacy dark mode state
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
+    root.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,13 +51,7 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Vertical Separator */}
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
 
-            {/* Theme Toggle */}
-            <button onClick={toggleTheme} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-900 rounded-lg transition-colors" aria-label="Toggle Dark Mode">
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
 
             {/* User Session Interface */}
             {user && (

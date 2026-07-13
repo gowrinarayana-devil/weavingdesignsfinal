@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Sun, Moon, Home, Download, Phone, ArrowUpRight, X, Info } from 'lucide-react';
+import { ShoppingCart, Home, Download, Phone, ArrowUpRight, X, Info } from 'lucide-react';
 
 export default function Navbar() {
   const { cartItems } = useCart();
   const location = useLocation();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [installPlatform, setInstallPlatform] = useState(null); // 'ios', 'desktop', 'android'
   const [showContactModal, setShowContactModal] = useState(false);
@@ -18,16 +17,12 @@ export default function Navbar() {
     setIsIOS(/iPad|iPhone|iPod/.test(ua) && !window.MSStream);
   }, []);
 
-  // Sync theme to DOM class
+  // Ensure theme is always light and clean up legacy dark mode state
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    root.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   // Listen to PWA installable event
   useEffect(() => {
@@ -44,10 +39,6 @@ export default function Navbar() {
       window.removeEventListener('pwa-installable', handlePwaInstallable);
     };
   }, []);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   // Determine platform and handle PWA installation prompt
   const handleInstallClick = async () => {
@@ -157,14 +148,7 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* Theme Toggle */}
-              <button 
-                onClick={toggleTheme} 
-                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-900 rounded-lg transition-colors cursor-pointer" 
-                aria-label="Toggle Dark Mode"
-              >
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
+
 
               {/* Shopping Cart Indicator */}
               <Link 
