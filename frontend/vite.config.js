@@ -27,6 +27,26 @@ const htmlOptimizePlugin = () => {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), htmlOptimizePlugin()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('scheduler') || id.includes('react-dom') || id.includes('react-router') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('supabase-js') || id.includes('postgrest-js') || id.includes('storage-js') || id.includes('realtime-js')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            return 'vendor-others';
+          }
+        }
+      }
+    }
+  },
   server: {
     port: 3000,
     host: true, // allows access from external network interfaces
