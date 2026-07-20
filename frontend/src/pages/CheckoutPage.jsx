@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft, Download, FileText } from 'lucide-react';
+import { CreditCard, ShoppingBag, AlertCircle, ShieldAlert, CheckCircle, Clock, QrCode, Copy, Check, ChevronLeft, Download, FileText, Mail } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { updateSEO } from '../utils/seo';
 import { generateInvoicePDF } from '../utils/invoice';
@@ -311,12 +311,11 @@ export default function CheckoutPage() {
             Go to Downloads Page
           </Link>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I%20need%20support%20regarding%20my%20purchase."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full block border border-emerald-500/20 dark:border-emerald-500/10 text-emerald-600 dark:text-emerald-450 bg-emerald-500/5 hover:bg-emerald-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center"
+            href="mailto:gudurupavan0297@gmail.com?subject=Support%20Request%20-%20Purchase%20Weaving%20Designs"
+            className="w-full flex items-center justify-center gap-2 border border-brand-500/20 dark:border-brand-500/10 text-brand-600 dark:text-brand-450 bg-brand-500/5 hover:bg-brand-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center cursor-pointer"
           >
-            Contact Support via WhatsApp
+            <Mail size={18} />
+            <span>Contact Support via Email</span>
           </a>
           <Link
             to="/"
@@ -379,12 +378,11 @@ export default function CheckoutPage() {
             Track Download Status
           </Link>
           <a
-            href={`https://wa.me/919052572363?text=${encodeURIComponent("Hi Weaving Designs, I have submitted a transaction and need manual UTR approval. UTR: " + utr)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full block border border-amber-500/25 dark:border-amber-500/10 text-amber-600 dark:text-amber-450 bg-amber-500/5 hover:bg-amber-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center"
+            href={`mailto:gudurupavan0297@gmail.com?subject=UTR%20Approval%20Request%20-%20Weaving%20Designs&body=${encodeURIComponent("Hi Weaving Designs, I have submitted a transaction and need manual UTR approval. UTR: " + utr)}`}
+            className="w-full flex items-center justify-center gap-2 border border-amber-500/25 dark:border-amber-500/10 text-amber-600 dark:text-amber-450 bg-amber-500/5 hover:bg-amber-500/10 font-semibold py-3 rounded-xl transition-all text-sm text-center cursor-pointer"
           >
-            Contact Support for Approval
+            <Mail size={18} />
+            <span>Contact Support for Approval</span>
           </a>
           <Link
             to="/"

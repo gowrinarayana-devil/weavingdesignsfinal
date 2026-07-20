@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
-import { Download, AlertCircle, FileArchive, Search, Clock, FileText } from 'lucide-react';
+import { Download, AlertCircle, FileArchive, Search, Clock, FileText, Mail } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { updateSEO } from '../utils/seo';
 import { generateInvoicePDF } from '../utils/invoice';
@@ -190,16 +190,15 @@ export default function DownloadsPage() {
               <span>Custom Design Support</span>
             </h3>
             <p className="text-xs text-slate-400 mb-4 leading-normal">
-              Need a custom layout, sizing adjustment, or want to create a brand new design? Tap below to chat with us.
+              Need a custom layout, sizing adjustment, or want to create a brand new design? Tap below to email us.
             </p>
           </div>
           <a
-            href="https://wa.me/919052572363?text=Hi%20Weaving%20Designs,%20I'm%20interested%20in%20a%20custom%20design."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center flex items-center justify-center gap-1.5 border border-emerald-500/20 cursor-pointer"
+            href="mailto:gudurupavan0297@gmail.com?subject=Custom%20Design%20Request%20-%20Weaving%20Designs"
+            className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center flex items-center justify-center gap-1.5 border border-brand-500/20 cursor-pointer"
           >
-            Chat for Custom Design
+            <Mail size={14} />
+            <span>Email for Custom Design</span>
           </a>
         </div>
       </div>
