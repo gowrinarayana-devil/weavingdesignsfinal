@@ -5,6 +5,29 @@ import App from './App.jsx'
 import './index.css'
 import axios from 'axios'
 import { Capacitor } from '@capacitor/core'
+import { getOptimizedImageUrl } from './utils/image'
+
+// Early dynamic image preload from localStorage cache to optimize LCP
+try {
+  const cached = localStorage.getItem('weaving_designs_cache');
+  if (cached) {
+    const designs = JSON.parse(cached);
+    if (designs && designs.length > 0) {
+      const firstDesign = designs[0];
+      const imageUrl = getOptimizedImageUrl(firstDesign.preview_image_url || firstDesign.image_url, 400, 75);
+      if (imageUrl) {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = imageUrl;
+        link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+      }
+    }
+  }
+} catch (e) {
+  console.warn('Failed to inject early image preload:', e);
+}
 
 // Global PWA Installation Event Hook
 if (typeof window !== 'undefined') {
