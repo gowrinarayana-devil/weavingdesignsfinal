@@ -6,11 +6,6 @@
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>https://www.weavingdesigns.in/cart</loc>
-    <priority>0.3</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
     <loc>https://www.weavingdesigns.in/design/b08026bc-35c6-423a-8cec-ed65c3f7c1ee/480-hooks-103-reed</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>

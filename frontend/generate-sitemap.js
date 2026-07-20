@@ -52,18 +52,17 @@ async function generateSitemap() {
         designs = data;
         console.log(`Fetched ${designs.length} designs from Supabase.`);
       } else {
-        console.log('No designs found in Supabase. Using mock designs.');
-        designs = MOCK_DESIGNS;
+        console.log('No designs found in Supabase. Sitemap will only contain static pages.');
+        designs = [];
       }
     } catch (err) {
-      console.warn('Supabase query failed. Falling back to mock designs for sitemap:', err.message);
-      designs = MOCK_DESIGNS;
+      console.warn('Supabase query failed. Sitemap will only contain static pages:', err.message);
+      designs = [];
     }
   }
 
   const urls = [
-    { loc: 'https://www.weavingdesigns.in/', priority: '1.0', changefreq: 'daily' },
-    { loc: 'https://www.weavingdesigns.in/cart', priority: '0.3', changefreq: 'weekly' }
+    { loc: 'https://www.weavingdesigns.in/', priority: '1.0', changefreq: 'daily' }
   ];
 
   designs.forEach(d => {

@@ -11,10 +11,11 @@ export default function CartPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    updateSEO(
-      'Shopping Cart',
-      'Review and manage the selected Jacquard and embroidery designs in your shopping cart before secure checkout.'
-    );
+    updateSEO({
+      title: 'Shopping Cart',
+      description: 'Review and manage the selected Jacquard and embroidery designs in your shopping cart before secure checkout.',
+      noindex: true
+    });
   }, []);
 
   const handleCheckout = () => {

@@ -245,6 +245,11 @@ export default function DesignDetail() {
   }
 
   if (!design) {
+    updateSEO({
+      title: 'Design Not Found',
+      description: 'The design template path does not exist or has been removed.',
+      noindex: true
+    });
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-16 text-center">
         <h2 className="font-display font-bold text-2xl text-slate-800 dark:text-slate-100">Design Not Found</h2>

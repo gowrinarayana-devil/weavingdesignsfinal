@@ -56,6 +56,13 @@ export const updateSEO = (titleOrConfig, description, image, url, type = 'websit
   // Standard Meta Tags
   setMetaTag('name', 'description', actualDesc);
 
+  // Robots / Noindex Support
+  if (titleOrConfig && typeof titleOrConfig === 'object' && titleOrConfig.noindex) {
+    setMetaTag('name', 'robots', 'noindex, nofollow');
+  } else {
+    setMetaTag('name', 'robots', 'index, follow');
+  }
+
   // Open Graph / Facebook
   setMetaTag('property', 'og:title', title ? `${title} | Weaving Designs` : 'Weaving Designs');
   setMetaTag('property', 'og:description', actualDesc);
