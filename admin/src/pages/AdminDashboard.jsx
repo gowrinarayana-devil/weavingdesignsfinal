@@ -35,6 +35,11 @@ export default function AdminDashboard() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDesc, setNewCategoryDesc] = useState('');
 
+  // Edit category states
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryDesc, setEditCategoryDesc] = useState('');
+
   // Manage designs list
   const [designs, setDesigns] = useState([]);
   const [editingDesign, setEditingDesign] = useState(null);
@@ -221,6 +226,96 @@ export default function AdminDashboard() {
     } catch (err) {
       setError(err.message || 'Failed to create category.');
     }
+  };
+
+  // Update Category Handler
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory || !editCategoryName) return;
+    setError('');
+    setSuccess('');
+
+    try {
+      if (isDummyClient) {
+        setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, name: editCategoryName, description: editCategoryDesc } : c));
+        setSuccess(`Category updated to "${editCategoryName}" (Sandbox).`);
+        setEditingCategory(null);
+        setEditCategoryName('');
+        setEditCategoryDesc('');
+        return;
+      }
+
+      const { data, error: updateErr } = await supabase
+        .from('categories')
+        .update({ name: editCategoryName, description: editCategoryDesc })
+        .eq('id', editingCategory.id)
+        .select()
+        .single();
+
+      if (updateErr) throw updateErr;
+
+      setCategories(categories.map(c => c.id === editingCategory.id ? data : c));
+      setSuccess(`Category "${editCategoryName}" updated successfully!`);
+      setEditingCategory(null);
+      setEditCategoryName('');
+      setEditCategoryDesc('');
+    } catch (err) {
+      setError(err.message || 'Failed to update category.');
+    }
+  };
+
+  // Delete Category Handler
+  const handleDeleteCategory = async (catId, catName) => {
+    if (window.confirm(`Are you sure you want to delete the category "${catName}"? This may affect designs linked to it.`)) {
+      setError('');
+      setSuccess('');
+      try {
+        if (isDummyClient) {
+          setCategories(categories.filter(c => c.id !== catId));
+          setSuccess(`Category "${catName}" deleted (Sandbox).`);
+          if (editingCategory?.id === catId) {
+            setEditingCategory(null);
+            setEditCategoryName('');
+            setEditCategoryDesc('');
+          }
+          return;
+        }
+
+        const { error: deleteErr } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', catId);
+
+        if (deleteErr) {
+          if (deleteErr.code === '23503') {
+            throw new Error(`Cannot delete category "${catName}" because it is currently linked to design assets. Please reassign those designs first.`);
+          }
+          throw deleteErr;
+        }
+
+        setCategories(categories.filter(c => c.id !== catId));
+        setSuccess(`Category "${catName}" deleted successfully!`);
+        if (editingCategory?.id === catId) {
+          setEditingCategory(null);
+          setEditCategoryName('');
+          setEditCategoryDesc('');
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to delete category.');
+      }
+    }
+  };
+
+  const startEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setEditCategoryName(cat.name);
+    setEditCategoryDesc(cat.description || '');
+  };
+
+  const cancelEditCategory = () => {
+    setEditingCategory(null);
+    setEditCategoryName('');
+    setEditCategoryDesc('');
   };
 
   // Upload Design Form Handler
@@ -952,51 +1047,119 @@ export default function AdminDashboard() {
             </form>
           </div>
 
-          {/* Add Category */}
+          {/* Add or Edit Category */}
           <div className="lg:col-span-1 bg-white dark:bg-dark-900 border border-slate-200/50 dark:border-slate-800/40 p-6 rounded-2xl shadow-sm space-y-6">
-            <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
-              <Plus size={18} className="text-brand-500" />
-              <span>Add Category</span>
-            </h3>
+            {editingCategory ? (
+              <>
+                <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+                  <Edit size={18} className="text-brand-500" />
+                  <span>Edit Category</span>
+                </h3>
 
-            <form onSubmit={handleCreateCategory} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category Name</label>
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  placeholder="Kurti Sleeve"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
-                <input
-                  type="text"
-                  value={newCategoryDesc}
-                  onChange={(e) => setNewCategoryDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  placeholder="Sleeve borders for ladies kurtis"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-dark-950 font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer"
-              >
-                Add Category
-              </button>
-            </form>
+                <form onSubmit={handleUpdateCategory} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category Name</label>
+                    <input
+                      type="text"
+                      value={editCategoryName}
+                      onChange={(e) => setEditCategoryName(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="Kurti Sleeve"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
+                    <input
+                      type="text"
+                      value={editCategoryDesc}
+                      onChange={(e) => setEditCategoryDesc(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="Sleeve borders for ladies kurtis"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEditCategory}
+                      className="flex-1 bg-slate-150 hover:bg-slate-200 dark:bg-dark-850 dark:hover:bg-dark-800 text-slate-700 dark:text-slate-200 font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h3 className="font-display font-bold text-base text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-1.5">
+                  <Plus size={18} className="text-brand-500" />
+                  <span>Add Category</span>
+                </h3>
+
+                <form onSubmit={handleCreateCategory} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category Name</label>
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="Kurti Sleeve"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</label>
+                    <input
+                      type="text"
+                      value={newCategoryDesc}
+                      onChange={(e) => setNewCategoryDesc(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-dark-950 border border-slate-200 dark:border-slate-850 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                      placeholder="Sleeve borders for ladies kurtis"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-dark-950 font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer"
+                  >
+                    Add Category
+                  </button>
+                </form>
+              </>
+            )}
 
             {/* Registered Categories list */}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Categories</label>
-              <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
+              <div className="max-h-48 overflow-y-auto pr-1 space-y-1">
                 {categories.map((c) => (
-                  <div key={c.id} className="flex justify-between items-center text-xs p-1.5 hover:bg-slate-50 dark:hover:bg-dark-950 rounded text-slate-600 dark:text-slate-400 font-medium border border-transparent border-b-slate-100 dark:border-b-slate-800 last:border-0">
-                    <span>{c.name}</span>
-                    <span className="text-[10px] text-slate-400 italic truncate max-w-[120px]">{c.description || 'No description'}</span>
+                  <div key={c.id} className="flex justify-between items-center text-xs p-1.5 hover:bg-slate-50 dark:hover:bg-dark-950 rounded text-slate-600 dark:text-slate-400 font-medium border border-transparent border-b-slate-100 dark:border-b-slate-800 last:border-0 group">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">{c.name}</span>
+                      <span className="text-[10px] text-slate-400 italic truncate max-w-[140px]">{c.description || 'No description'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => startEditCategory(c)}
+                        className="p-1 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded transition-colors cursor-pointer"
+                        title="Edit Category"
+                      >
+                        <Edit size={12} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(c.id, c.name)}
+                        className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                        title="Delete Category"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
