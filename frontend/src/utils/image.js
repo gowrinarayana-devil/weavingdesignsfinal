@@ -12,8 +12,9 @@ export function getOptimizedImageUrl(url, width = 400, quality = 75) {
   
   // Apply Supabase Storage transformation parameters
   if (url.includes('supabase.co/storage/v1/object/public/')) {
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}width=${width}&quality=${quality}&format=webp`;
+    const transformedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    const separator = transformedUrl.includes('?') ? '&' : '?';
+    return `${transformedUrl}${separator}width=${width}&quality=${quality}&resize=contain`;
   }
   
   // Apply Unsplash parameter transformations (for mock catalog)

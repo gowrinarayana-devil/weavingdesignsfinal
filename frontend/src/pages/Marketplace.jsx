@@ -377,9 +377,10 @@ export default function Marketplace() {
 
             {/* Sorting Select */}
             <div className="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
-              <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold whitespace-nowrap">Sort By:</span>
+              <label htmlFor="sort-select" className="text-xs text-slate-600 dark:text-slate-400 font-semibold whitespace-nowrap">Sort By:</label>
               <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
                 <select
+                  id="sort-select"
                   value={sort}
                   onChange={(e) => {
                     setSort(e.target.value);
@@ -572,8 +573,9 @@ export default function Marketplace() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold whitespace-nowrap">Per page:</span>
+                  <label htmlFor="per-page-select" className="text-xs font-semibold whitespace-nowrap">Per page:</label>
                   <select
+                    id="per-page-select"
                     value={itemsPerPage}
                     onChange={(e) => {
                       setItemsPerPage(parseInt(e.target.value, 10));
