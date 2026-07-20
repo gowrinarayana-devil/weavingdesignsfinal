@@ -22,8 +22,8 @@ function loadEnv() {
 }
 
 const env = loadEnv();
-const supabaseUrl = env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || '';
 
 const isDummy = !supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your-supabase-id') || supabaseUrl.includes('dummy');
 
