@@ -277,7 +277,7 @@ export default function Marketplace() {
     };
 
     updateSEO({
-      title: 'WEAVING DESIGNS - Premium Weaving & Embroidery Designs Marketplace',
+      title: 'Weaving Designs - Premium Weaving & Embroidery Designs Marketplace',
       description: 'Explore and download premium Jacquard weaving designs, border styles, motifs, and custom embroidery layouts with full color charts and machine config specs.',
       image: designs[0]?.preview_image_url || designs[0]?.image_url || `${window.location.origin}/logo.jpg`,
       url: window.location.href,
@@ -289,9 +289,9 @@ export default function Marketplace() {
   // Dynamically update document title on search query changes
   useEffect(() => {
     if (search.trim()) {
-      document.title = `Search: "${search}" | WEAVING DESIGNS`;
+      document.title = `Search: "${search}" | Weaving Designs`;
     } else {
-      document.title = 'WEAVING DESIGNS - Premium Weaving & Embroidery Designs Marketplace';
+      document.title = 'Weaving Designs - Premium Weaving & Embroidery Designs Marketplace';
     }
   }, [search]);
 
