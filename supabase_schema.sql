@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS public.designs (
     price NUMERIC NOT NULL CHECK (price >= 0),
     preview_image_url TEXT NOT NULL, -- Public preview URL (Mandatory Primary Image)
     secondary_image_url TEXT,        -- Public preview URL (Optional Secondary Image)
+    image_urls TEXT[],               -- Array of public preview image URLs (Supports unlimited images)
     zip_file_path TEXT NOT NULL,     -- Private storage path (original-files/design_id.zip)
     is_featured BOOLEAN NOT NULL DEFAULT false,
     hooks TEXT,                      -- Weaving hook count parameter (e.g. 480 hooks)
@@ -50,6 +51,8 @@ CREATE TABLE IF NOT EXISTS public.designs (
 
 -- Migration for existing databases:
 -- ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS secondary_image_url TEXT;
+-- ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS image_urls TEXT[];
+
 
 -- Enable Row Level Security (RLS) on designs
 ALTER TABLE public.designs ENABLE ROW LEVEL SECURITY;

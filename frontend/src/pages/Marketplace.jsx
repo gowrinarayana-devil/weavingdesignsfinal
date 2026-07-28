@@ -5,7 +5,8 @@ import { Search, SlidersHorizontal, ArrowUpDown, Tag, Heart, Eye, ShoppingCart, 
 import { useCart } from '../context/CartContext';
 import { updateSEO } from '../utils/seo';
 import { slugify } from '../utils/slugify';
-import { getOptimizedImageUrl } from '../utils/image';
+import { getOptimizedImageUrl, getDesignImages } from '../utils/image';
+
 
 // High-fidelity seed designs to bootstrap the catalog instantly on load
 const MOCK_DESIGNS = [
@@ -16,6 +17,12 @@ const MOCK_DESIGNS = [
     price: 180,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/fa37b61c-ee2d-4158-8e4a-16732b2e0893.jpg",
     secondary_image_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+    image_urls: [
+      "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/fa37b61c-ee2d-4158-8e4a-16732b2e0893.jpg",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80"
+    ],
     category: "BUTTIS",
     is_featured: false,
     created_at: "2026-07-06T15:41:30.206147+00:00",
@@ -30,6 +37,13 @@ const MOCK_DESIGNS = [
     description: "WELCOME TO WEAVING DESIGNS \nBEAUTIFUL MANGO SHAPE BUTTIS AND SMALL PEACOCK BUTTIS\n480 HOOKS , 100 STEEL REED , 688 WEAVING THREADS ( 464 MEENA + 224 JARI )\nWORKS IN BOTH HANDLOOM WEAVING AND POWERLOOM JACQUARD",
     price: 100,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/75e19932-cfdd-4bf7-99ee-ec0a83a38365.jpg",
+    secondary_image_url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+    image_urls: [
+      "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/75e19932-cfdd-4bf7-99ee-ec0a83a38365.jpg",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80"
+    ],
     category: "BUTTIS",
     is_featured: false,
     created_at: "2026-07-06T15:29:57.401929+00:00",
@@ -44,6 +58,12 @@ const MOCK_DESIGNS = [
     description: "WELCOME TO WEAVING DESIGNS \nVINTAGE BEAUTIFUL PEACOCK AND CHAKRAM BUTTA DESIGN\n480 HOOKS , 100 REED , 70 + 70 JARI CARDS DESIGN \nSMOOTH CLOTH , MEENA ANI WEAVING \nWORKS IN BOTH     HANDLOOM AND POWERLOOM ELECTRONIC JACQUARD\n ",
     price: 70,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/79311a0b-fae0-456f-ab77-20927d842ad7.jpg",
+    secondary_image_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+    image_urls: [
+      "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/79311a0b-fae0-456f-ab77-20927d842ad7.jpg",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80"
+    ],
     category: "BUTTIS",
     is_featured: false,
     created_at: "2026-07-06T15:19:00.499275+00:00",
@@ -58,6 +78,12 @@ const MOCK_DESIGNS = [
     description: "WELCOME TO WEAVING DESIGNS \n240 HOOKS , 360 CARDS , 84 STEEL REED \nSMALL BEAUTIFUL PEACOCK BORDER WITH SMALL FLOWER\nWORK IN HANDLOOM AND ELECTRONIC JACQUARD",
     price: 140,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/80590932-eedd-432d-9f37-55fb4e230a00.jpg",
+    secondary_image_url: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80",
+    image_urls: [
+      "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/80590932-eedd-432d-9f37-55fb4e230a00.jpg",
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80"
+    ],
     category: "border",
     is_featured: false,
     created_at: "2026-07-06T15:06:59.096173+00:00",
@@ -72,6 +98,12 @@ const MOCK_DESIGNS = [
     description: "WELCOME TO WEAVING DESIGNS\nVINTAGE PEACOCK BORDER\nBEAUTIFUL PEACOCK BORDER , THIS DESIGN SET AS IN ROUND SHAPE OF REVERSE HOOKS AND HALF ROUND SHAPE AND EXPAND THE BORDER WITH BANARAS\n240 HOOKS , 400 CARDS , 84 STEEL REED \nWORK IN HANDLOOM AND ELETRONIC JACQUARD",
     price: 200,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/4cca6f42-dda9-496f-9276-f80e5a7feceb.jpg",
+    secondary_image_url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+    image_urls: [
+      "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/4cca6f42-dda9-496f-9276-f80e5a7feceb.jpg",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80"
+    ],
     category: "border",
     is_featured: false,
     created_at: "2026-07-06T14:48:57.472563+00:00",
@@ -86,6 +118,13 @@ const MOCK_DESIGNS = [
     description: "WELCOME TO WEAVING DESIGNS\nVINTAGE BORDER \n240 HOOKS , 398 CARDS \n84 STEEL REED\nSUPPORT ON HANDLOOM AND ELECTRONIC JACQUARD\nBORDER CAN CHANGE AS U LOOK BEAUTIFUL DESIGN LIKE MAIN BORDER DOWN SIDE OR UP SIDE AND EXPAND BANARAS AS U LIKE ",
     price: 200,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/201228af-76c4-46f8-bb1c-c1cc54c8fa13.jpg",
+    secondary_image_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+    image_urls: [
+      "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/201228af-76c4-46f8-bb1c-c1cc54c8fa13.jpg",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80"
+    ],
     category: "border",
     is_featured: false,
     created_at: "2026-07-06T04:10:45.085149+00:00",
@@ -95,6 +134,7 @@ const MOCK_DESIGNS = [
     reed: "84 steel reed"
   }
 ];
+
 
 const MOCK_CATEGORIES = ['All', 'Border', 'Blouse', 'Motif', 'Sleeve', 'Pallu', 'Neckline'];
 
@@ -457,60 +497,65 @@ export default function Marketplace() {
                 const reedVal = design.reed ? design.reed.replace(/reed|steel/ig, '').trim() : '100';
                 const ppiVal = design.box ? design.box.replace(/box|boxes/ig, '').trim() : '72';
 
+                const designImages = getDesignImages(design);
+                const hasSecondary = designImages.length > 1;
+
                 return (
-                  <div 
-                    key={design.id} 
-                    className="group relative bg-white dark:bg-dark-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl dark:hover:shadow-brand-500/5 hover:border-brand-500/20 dark:hover:border-brand-500/20 transition-all duration-300 flex flex-col h-full"
-                  >
-                    
-                    {/* Design Image Preview */}
-                    <Link 
-                      to={`/design/${design.id}/${slugify(design.title)}`}
-                      className="relative block overflow-hidden aspect-square bg-slate-100 dark:bg-dark-950 cursor-pointer"
-                    >
-                      {/* Visual protection watermark banner */}
-                      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.03)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.03)_50%,rgba(0,0,0,0.03)_75%,transparent_75%,transparent)] bg-[size:30px_30px] pointer-events-none z-10 opacity-60"></div>
-                      
-                      {/* Image overlay gradient for depth */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
 
-                      {/* Primary Image 1 */}
-                      <img
-                        src={getOptimizedImageUrl(design.preview_image_url || design.image_url, 400, 75)}
-                        alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
-                        loading={index < 4 ? "eager" : "lazy"}
-                        className={`w-full h-full object-cover transition-all duration-500 no-select ${
-                          design.secondary_image_url ? 'group-hover:opacity-0 scale-100' : 'group-hover:scale-105'
-                        }`}
-                        onContextMenu={(e) => e.preventDefault()}
-                        draggable={false}
-                      />
+                      <div 
+                        key={design.id} 
+                        className="group bg-white dark:bg-dark-900 rounded-3xl overflow-hidden border border-slate-200/60 dark:border-slate-850 hover:border-brand-500/40 dark:hover:border-brand-500/40 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                      >
+                        
+                        {/* Design Image Preview */}
+                        <Link 
+                          to={`/design/${design.id}/${slugify(design.title)}`}
+                          className="relative block overflow-hidden aspect-square bg-slate-100 dark:bg-dark-950 cursor-pointer"
+                        >
+                          {/* Visual protection watermark banner */}
+                          <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.03)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.03)_50%,rgba(0,0,0,0.03)_75%,transparent_75%,transparent)] bg-[size:30px_30px] pointer-events-none z-10 opacity-60"></div>
+                          
+                          {/* Image overlay gradient for depth */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
 
-                      {/* Secondary Image 2 (Hover Preview if available) */}
-                      {design.secondary_image_url && (
-                        <img
-                          src={getOptimizedImageUrl(design.secondary_image_url, 400, 75)}
-                          alt={`Weaving Design Secondary Preview - ${design.title}`}
-                          loading="lazy"
-                          className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 no-select"
-                          onContextMenu={(e) => e.preventDefault()}
-                          draggable={false}
-                        />
-                      )}
-                      
-                      {/* 2 Images Badge */}
-                      {design.secondary_image_url && (
-                        <span className="absolute top-2.5 right-2.5 bg-slate-900/75 backdrop-blur-[4px] text-white px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase border border-white/10 z-20 flex items-center gap-1 shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
-                          2 Images
-                        </span>
-                      )}
+                          {/* Primary Image 1 */}
+                          <img
+                            src={getOptimizedImageUrl(designImages[0] || design.preview_image_url || design.image_url, 400, 75)}
+                            alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
+                            loading={index < 4 ? "eager" : "lazy"}
+                            className={`w-full h-full object-cover transition-all duration-500 no-select ${
+                              hasSecondary ? 'group-hover:opacity-0 scale-100' : 'group-hover:scale-105'
+                            }`}
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
+                          />
+
+                          {/* Secondary Image 2 (Hover Preview if available) */}
+                          {hasSecondary && (
+                            <img
+                              src={getOptimizedImageUrl(designImages[1], 400, 75)}
+                              alt={`Weaving Design Secondary Preview - ${design.title}`}
+                              loading="lazy"
+                              className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 no-select"
+                              onContextMenu={(e) => e.preventDefault()}
+                              draggable={false}
+                            />
+                          )}
+                          
+                          {/* Multiple Images Badge */}
+                          {hasSecondary && (
+                            <span className="absolute top-2.5 right-2.5 bg-slate-900/75 backdrop-blur-[4px] text-white px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase border border-white/10 z-20 flex items-center gap-1 shadow-sm">
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+                              {designImages.length} Images
+                            </span>
+                          )}
+
 
                       {/* Category Label Overlay */}
                       <span className="absolute bottom-2.5 left-2.5 bg-slate-900/60 backdrop-blur-[4px] text-slate-200 px-2 py-0.5 rounded-md text-[9px] font-semibold tracking-wide border border-white/5 z-20">
                         {design.category}
                       </span>
-                    </Link>
+                      </Link>
 
                     {/* Card Metadata */}
                     <div className="p-3 flex flex-col flex-grow">

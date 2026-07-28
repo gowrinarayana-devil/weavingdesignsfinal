@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase, isDummyClient } from '../supabase';
 import axios from 'axios';
 import { generateInvoicePDF } from '../utils/invoice';
+import { getDesignImages } from '../utils/imageUtils';
 import { LayoutDashboard, DollarSign, ShoppingBag, Users, FileImage, Upload, Plus, CheckCircle2, AlertCircle, Edit, Trash2, X, Clock, Check, XCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -21,8 +22,7 @@ export default function AdminDashboard() {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
-  const [previewFile, setPreviewFile] = useState(null);
-  const [secondaryPreviewFile, setSecondaryPreviewFile] = useState(null);
+  const [uploadImageFiles, setUploadImageFiles] = useState([]);
   const [zipFile, setZipFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [hooks, setHooks] = useState('');
@@ -46,16 +46,14 @@ export default function AdminDashboard() {
   const [editingDesign, setEditingDesign] = useState(null);
   const [downloadsList, setDownloadsList] = useState([]);
 
-  // Edit design form states
+  // Edit design form states (Multi-image management)
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editPrice, setEditPrice] = useState('');
   const [editCategory, setEditCategory] = useState('');
   const [editIsFeatured, setEditIsFeatured] = useState(false);
-  const [editPreviewFile, setEditPreviewFile] = useState(null);
-  const [editSecondaryPreviewFile, setEditSecondaryPreviewFile] = useState(null);
-  const [editSecondaryImageUrl, setEditSecondaryImageUrl] = useState(null);
-  const [removeSecondaryImage, setRemoveSecondaryImage] = useState(false);
+  const [editExistingImages, setEditExistingImages] = useState([]);
+  const [editNewImageFiles, setEditNewImageFiles] = useState([]);
   const [editZipFile, setEditZipFile] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [editHooks, setEditHooks] = useState('');
@@ -63,6 +61,30 @@ export default function AdminDashboard() {
   const [editBox, setEditBox] = useState('');
   const [editReed, setEditReed] = useState('');
   const [editFormats, setEditFormats] = useState('');
+
+  // Multi-image helper functions
+  const handleAddUploadImages = (files) => {
+    const newArr = Array.from(files);
+    setUploadImageFiles((prev) => [...prev, ...newArr]);
+  };
+
+  const handleRemoveUploadImage = (index) => {
+    setUploadImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddEditImageFiles = (files) => {
+    const newArr = Array.from(files);
+    setEditNewImageFiles((prev) => [...prev, ...newArr]);
+  };
+
+  const handleRemoveExistingEditImage = (index) => {
+    setEditExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewEditImageFile = (index) => {
+    setEditNewImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
 
   const filteredOrders = stats?.recentOrders?.filter((order) => {
     if (ordersSubTab === 'pending') return order.status === 'pending';
@@ -103,7 +125,14 @@ export default function AdminDashboard() {
             is_featured: true,
             preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80',
             secondary_image_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=150&q=80',
+            image_urls: [
+              'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80',
+              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=150&q=80',
+              'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=150&q=80',
+              'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=150&q=80'
+            ],
             zip_file_path: 'original-files/mock_zip_1.zip',
+
             categories: { name: 'Motif' }
           }
         ]);
@@ -111,23 +140,11 @@ export default function AdminDashboard() {
         let { data: dbDesigns, error: designsErr } = await supabase
           .from('designs')
           .select(`
-            id,
-            title,
-            description,
-            price,
-            is_featured,
-            preview_image_url,
-            secondary_image_url,
-            zip_file_path,
-            category_id,
-            hooks,
-            cards,
-            box,
-            reed,
-            formats,
+            *,
             categories (name)
           `)
           .order('created_at', { ascending: false });
+
 
         // Fallback for databases where secondary_image_url column has not been added yet
         if (designsErr && (designsErr.message?.includes('secondary_image_url') || designsErr.code === 'PGRST204' || designsErr.code === '42703')) {
@@ -350,61 +367,52 @@ export default function AdminDashboard() {
     setEditCategoryDesc('');
   };
 
-  // Upload Design Form Handler
+  // Upload Design Form Handler (Supports N multiple images)
   const handleUploadDesign = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    if (!title || !price || !category || (!isDummyClient && (!previewFile || !zipFile))) {
-      setError('Please fill all mandatory fields (Title, Category, Price, Primary Image 1, and ZIP file).');
+    if (!title || !price || !category || (!isDummyClient && (uploadImageFiles.length === 0 || !zipFile))) {
+      setError('Please fill all mandatory fields (Title, Category, Price, at least 1 Preview Image, and ZIP file).');
       return;
     }
 
     setUploading(true);
 
     try {
-      let previewUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80';
-      let secondaryUrl = secondaryPreviewFile ? 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80' : null;
+      let uploadedUrls = [];
       let zipPath = 'original-files/mock_design_file.zip';
 
-      if (!isDummyClient) {
+      if (isDummyClient) {
+        uploadedUrls = uploadImageFiles.length > 0 
+          ? uploadImageFiles.map(() => 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80')
+          : ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80'];
+      } else {
         const designId = crypto.randomUUID();
 
-        // 1. Upload mandatory preview image (Image 1) to public previews bucket
-        const previewExt = previewFile.name.split('.').pop();
-        const previewFilePath = `${designId}_1.${previewExt}`;
-        const { error: previewUploadErr } = await supabase.storage
-          .from('previews')
-          .upload(previewFilePath, previewFile);
+        // 1. Upload all selected preview images to storage
+        for (let i = 0; i < uploadImageFiles.length; i++) {
+          const file = uploadImageFiles[i];
+          const ext = file.name.split('.').pop();
+          const filePath = `${designId}_${i + 1}_${Date.now()}.${ext}`;
 
-        if (previewUploadErr) throw previewUploadErr;
-
-        // Resolve public URL for primary preview image
-        const { data: publicUrlData } = supabase.storage
-          .from('previews')
-          .getPublicUrl(previewFilePath);
-
-        previewUrl = publicUrlData.publicUrl;
-
-        // 2. Upload optional secondary preview image (Image 2) if provided
-        if (secondaryPreviewFile) {
-          const secExt = secondaryPreviewFile.name.split('.').pop();
-          const secFilePath = `${designId}_2.${secExt}`;
-          const { error: secUploadErr } = await supabase.storage
+          const { error: uploadErr } = await supabase.storage
             .from('previews')
-            .upload(secFilePath, secondaryPreviewFile);
+            .upload(filePath, file);
 
-          if (secUploadErr) throw secUploadErr;
+          if (uploadErr) throw uploadErr;
 
-          const { data: secPublicUrlData } = supabase.storage
+          const { data: pubData } = supabase.storage
             .from('previews')
-            .getPublicUrl(secFilePath);
+            .getPublicUrl(filePath);
 
-          secondaryUrl = secPublicUrlData.publicUrl;
+          if (pubData?.publicUrl) {
+            uploadedUrls.push(pubData.publicUrl);
+          }
         }
 
-        // 3. Upload original ZIP to private original-files bucket
+        // 2. Upload ZIP file
         const zipFilePath = `${designId}.zip`;
         const { error: zipUploadErr } = await supabase.storage
           .from('original-files')
@@ -413,42 +421,59 @@ export default function AdminDashboard() {
         if (zipUploadErr) throw zipUploadErr;
         zipPath = `original-files/${zipFilePath}`;
 
-        // 4. Resolve category ID
+        // 3. Resolve category ID
         const selectedCat = categories.find(c => c.name === category);
         if (!selectedCat) throw new Error('Invalid category chosen.');
 
-        // 5. Save design row in database table
-        const { error: dbErr } = await supabase
-          .from('designs')
-          .insert({
-            id: designId,
-            title,
-            description,
-            category_id: selectedCat.id,
-            price: parseFloat(price),
-            preview_image_url: previewUrl,
-            secondary_image_url: secondaryUrl,
-            zip_file_path: zipPath,
-            is_featured: isFeatured,
-            hooks: hooks || null,
-            cards: cards || null,
-            box: box || null,
-            reed: reed || null,
-            formats: formats || null
-          });
+        const previewUrl = uploadedUrls[0] || '';
+        const secondaryUrl = uploadedUrls.length > 2
+          ? JSON.stringify(uploadedUrls.slice(1))
+          : (uploadedUrls[1] || null);
 
-        if (dbErr) throw dbErr;
+
+        // 4. Save design row in database table
+        const insertPayload = {
+          id: designId,
+          title,
+          description,
+          category_id: selectedCat.id,
+          price: parseFloat(price),
+          preview_image_url: previewUrl,
+          secondary_image_url: secondaryUrl,
+          image_urls: uploadedUrls,
+          zip_file_path: zipPath,
+          is_featured: isFeatured,
+          hooks: hooks || null,
+          cards: cards || null,
+          box: box || null,
+          reed: reed || null,
+          formats: formats || null
+        };
+
+        let { error: dbErr } = await supabase
+          .from('designs')
+          .insert(insertPayload);
+
+        // Fallback for DBs where image_urls column hasn't been added yet
+        if (dbErr && (dbErr.message?.includes('image_urls') || dbErr.code === 'PGRST204' || dbErr.code === '42703')) {
+          delete insertPayload.image_urls;
+          const { error: retryErr } = await supabase
+            .from('designs')
+            .insert(insertPayload);
+          if (retryErr) throw retryErr;
+        } else if (dbErr) {
+          throw dbErr;
+        }
       }
 
-      setSuccess(`Weaving Design "${title}" uploaded successfully with ${secondaryUrl ? '2' : '1'} preview image(s)!`);
+      setSuccess(`Weaving Design "${title}" uploaded successfully with ${uploadedUrls.length} preview image(s)!`);
       // Reset inputs
       setTitle('');
       setDescription('');
       setPrice('');
       setCategory('');
       setIsFeatured(false);
-      setPreviewFile(null);
-      setSecondaryPreviewFile(null);
+      setUploadImageFiles([]);
       setZipFile(null);
       setHooks('');
       setCards('');
@@ -461,11 +486,7 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error('Upload failed:', err);
-      if (err.message?.includes('secondary_image_url') || err.code === 'PGRST204' || err.code === '42703') {
-        setError('Database schema update required: Please run "ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS secondary_image_url TEXT;" in your Supabase SQL Editor.');
-      } else {
-        setError(err.message || 'Failed to complete design asset upload.');
-      }
+      setError(err.message || 'Failed to complete design asset upload.');
     } finally {
       setUploading(false);
     }
@@ -479,10 +500,8 @@ export default function AdminDashboard() {
     setEditPrice(design.price.toString());
     setEditCategory(design.categories?.name || '');
     setEditIsFeatured(design.is_featured);
-    setEditPreviewFile(null);
-    setEditSecondaryPreviewFile(null);
-    setEditSecondaryImageUrl(design.secondary_image_url || null);
-    setRemoveSecondaryImage(false);
+    setEditExistingImages(getDesignImages(design));
+    setEditNewImageFiles([]);
     setEditZipFile(null);
     setEditHooks(design.hooks || '');
     setEditCards(design.cards || '');
@@ -499,10 +518,8 @@ export default function AdminDashboard() {
     setEditPrice('');
     setEditCategory('');
     setEditIsFeatured(false);
-    setEditPreviewFile(null);
-    setEditSecondaryPreviewFile(null);
-    setEditSecondaryImageUrl(null);
-    setRemoveSecondaryImage(false);
+    setEditExistingImages([]);
+    setEditNewImageFiles([]);
     setEditZipFile(null);
     setEditHooks('');
     setEditCards('');
@@ -519,48 +536,38 @@ export default function AdminDashboard() {
     setUpdating(true);
 
     try {
-      let previewUrl = editingDesign.preview_image_url;
-      let secondaryUrl = removeSecondaryImage ? null : (editSecondaryImageUrl || editingDesign.secondary_image_url || null);
-      let zipPath = editingDesign.zip_file_path;
+      let finalUrls = [...editExistingImages];
 
       if (!isDummyClient) {
         const designId = editingDesign.id;
 
-        // 1. Upload new Image 1 if provided
-        if (editPreviewFile) {
-          const previewExt = editPreviewFile.name.split('.').pop();
-          const previewFilePath = `${designId}_1_${Date.now()}.${previewExt}`;
-          const { error: previewUploadErr } = await supabase.storage
+        // Upload any new image files added by admin
+        for (let i = 0; i < editNewImageFiles.length; i++) {
+          const file = editNewImageFiles[i];
+          const ext = file.name.split('.').pop();
+          const filePath = `${designId}_new_${i + 1}_${Date.now()}.${ext}`;
+
+          const { error: uploadErr } = await supabase.storage
             .from('previews')
-            .upload(previewFilePath, editPreviewFile);
+            .upload(filePath, file);
 
-          if (previewUploadErr) throw previewUploadErr;
+          if (uploadErr) throw uploadErr;
 
-          const { data: publicUrlData } = supabase.storage
+          const { data: pubData } = supabase.storage
             .from('previews')
-            .getPublicUrl(previewFilePath);
+            .getPublicUrl(filePath);
 
-          previewUrl = publicUrlData.publicUrl;
+          if (pubData?.publicUrl) {
+            finalUrls.push(pubData.publicUrl);
+          }
         }
 
-        // 2. Upload new Image 2 if provided
-        if (editSecondaryPreviewFile && !removeSecondaryImage) {
-          const secExt = editSecondaryPreviewFile.name.split('.').pop();
-          const secFilePath = `${designId}_2_${Date.now()}.${secExt}`;
-          const { error: secUploadErr } = await supabase.storage
-            .from('previews')
-            .upload(secFilePath, editSecondaryPreviewFile);
-
-          if (secUploadErr) throw secUploadErr;
-
-          const { data: secPublicUrlData } = supabase.storage
-            .from('previews')
-            .getPublicUrl(secFilePath);
-
-          secondaryUrl = secPublicUrlData.publicUrl;
+        if (finalUrls.length === 0) {
+          throw new Error('At least 1 preview image is required for the design.');
         }
 
-        // 3. Upload new ZIP if provided
+        // Upload new ZIP file if provided
+        let zipPath = editingDesign.zip_file_path;
         if (editZipFile) {
           const zipFilePath = `${designId}_${Date.now()}.zip`;
           const { error: zipUploadErr } = await supabase.storage
@@ -571,33 +578,54 @@ export default function AdminDashboard() {
           zipPath = `original-files/${zipFilePath}`;
         }
 
-        // 4. Resolve Category ID
+        // Resolve Category ID
         const selectedCat = categories.find(c => c.name === editCategory);
         if (!selectedCat) throw new Error('Invalid category chosen.');
 
-        // 5. Update row in Supabase designs table
-        const { error: dbErr } = await supabase
+        const previewUrl = finalUrls[0];
+        const secondaryUrl = finalUrls.length > 2
+          ? JSON.stringify(finalUrls.slice(1))
+          : (finalUrls[1] || null);
+
+
+        const updatePayload = {
+          title: editTitle,
+          description: editDescription,
+          category_id: selectedCat.id,
+          price: parseFloat(editPrice),
+          preview_image_url: previewUrl,
+          secondary_image_url: secondaryUrl,
+          image_urls: finalUrls,
+          zip_file_path: zipPath,
+          is_featured: editIsFeatured,
+          hooks: editHooks || null,
+          cards: editCards || null,
+          box: editBox || null,
+          reed: editReed || null,
+          formats: editFormats || null
+        };
+
+        let { error: dbErr } = await supabase
           .from('designs')
-          .update({
-            title: editTitle,
-            description: editDescription,
-            category_id: selectedCat.id,
-            price: parseFloat(editPrice),
-            preview_image_url: previewUrl,
-            secondary_image_url: secondaryUrl,
-            zip_file_path: zipPath,
-            is_featured: editIsFeatured,
-            hooks: editHooks || null,
-            cards: editCards || null,
-            box: editBox || null,
-            reed: editReed || null,
-            formats: editFormats || null
-          })
+          .update(updatePayload)
           .eq('id', designId);
 
-        if (dbErr) throw dbErr;
+        // Fallback if image_urls column does not exist in DB schema yet
+        if (dbErr && (dbErr.message?.includes('image_urls') || dbErr.code === 'PGRST204' || dbErr.code === '42703')) {
+          delete updatePayload.image_urls;
+          const { error: retryErr } = await supabase
+            .from('designs')
+            .update(updatePayload)
+            .eq('id', designId);
+          if (retryErr) throw retryErr;
+        } else if (dbErr) {
+          throw dbErr;
+        }
       } else {
         // Mock Sandbox Update
+        const previewUrl = finalUrls[0] || editingDesign.preview_image_url;
+        const secondaryUrl = finalUrls[1] || null;
+
         const updated = designs.map(d => {
           if (d.id === editingDesign.id) {
             return {
@@ -608,7 +636,8 @@ export default function AdminDashboard() {
               categories: { name: editCategory },
               is_featured: editIsFeatured,
               preview_image_url: previewUrl,
-              secondary_image_url: secondaryUrl
+              secondary_image_url: secondaryUrl,
+              image_urls: finalUrls
             };
           }
           return d;
@@ -616,21 +645,18 @@ export default function AdminDashboard() {
         setDesigns(updated);
       }
 
-      setSuccess(`Design "${editTitle}" updated successfully!`);
+      setSuccess(`Design "${editTitle}" updated successfully with ${finalUrls.length} image(s)!`);
       cancelEdit();
       fetchStatsAndCategories();
 
     } catch (err) {
       console.error('Update failed:', err);
-      if (err.message?.includes('secondary_image_url') || err.code === 'PGRST204' || err.code === '42703') {
-        setError('Database schema update required: Please run "ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS secondary_image_url TEXT;" in your Supabase SQL Editor.');
-      } else {
-        setError(err.message || 'Failed to update design.');
-      }
+      setError(err.message || 'Failed to update design.');
     } finally {
       setUpdating(false);
     }
   };
+
 
   // Delete Design Handler
   const handleDeleteDesign = async (designId, designTitle, previewUrl, zipPath) => {
@@ -1092,44 +1118,74 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
-                    Image 1 (Mandatory) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPreviewFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                  />
-                  {previewFile && (
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">
-                      ✓ Selected: {previewFile.name}
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+                      Design Preview Images <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      Click the <strong className="text-brand-500 font-bold">+ Add Image</strong> button below to select single or multiple preview photos (1, 2, 3, 5, 10+ images).
                     </p>
-                  )}
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+                    {uploadImageFiles.length} {uploadImageFiles.length === 1 ? 'Image' : 'Images'} Selected
+                  </span>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
-                    Image 2 (Optional)
+                {/* Grid of selected images + Plus Card */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {uploadImageFiles.map((file, idx) => (
+                    <div key={idx} className="relative group aspect-square rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-dark-950 flex items-center justify-center shadow-sm">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className={`absolute top-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded shadow ${
+                        idx === 0 ? 'bg-amber-500 text-white' : 'bg-slate-900/80 text-white'
+                      }`}>
+                        {idx === 0 ? 'Image 1 (Primary)' : `Image ${idx + 1}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveUploadImage(idx)}
+                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow transition-transform group-hover:scale-110 cursor-pointer z-10"
+                        title="Remove Image"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Big Plus Card for Adding Images */}
+                  <label className="relative aspect-square rounded-2xl border-2 border-dashed border-brand-500/50 hover:border-brand-500 bg-brand-500/5 hover:bg-brand-500/10 flex flex-col items-center justify-center cursor-pointer transition-all p-2 group text-center shadow-sm">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          handleAddUploadImages(e.target.files);
+                          e.target.value = '';
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <div className="w-10 h-10 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform shadow-sm">
+                      <Plus size={22} className="stroke-[3]" />
+                    </div>
+                    <span className="text-[11px] font-extrabold text-brand-600 dark:text-brand-400">
+                      + Add Image
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-medium mt-0.5">
+                      Select 1 or multiple
+                    </span>
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setSecondaryPreviewFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:text-blue-400 hover:file:bg-blue-500/20 cursor-pointer"
-                  />
-                  {secondaryPreviewFile ? (
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">
-                      ✓ Selected: {secondaryPreviewFile.name}
-                    </p>
-                  ) : (
-                    <p className="text-[10px] text-slate-400 mt-1 italic">Slide scroll second image</p>
-                  )}
                 </div>
 
-                <div>
+                {/* ZIP File selector */}
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
                     Original ZIP File <span className="text-red-500">*</span>
                   </label>
@@ -1141,11 +1197,12 @@ export default function AdminDashboard() {
                   />
                   {zipFile && (
                     <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">
-                      ✓ Selected: {zipFile.name}
+                      ✓ Selected ZIP: {zipFile.name}
                     </p>
                   )}
                 </div>
               </div>
+
 
               <button
                 type="submit"
@@ -1566,48 +1623,77 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="space-y-2.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0.5">
-                        Replace Image 1 (Mandatory Primary)
+                  <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+                        Design Images ({editExistingImages.length + editNewImageFiles.length} Total)
                       </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setEditPreviewFile(e.target.files[0])}
-                        className="w-full text-xs text-slate-450 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
-                      />
                     </div>
 
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0.5">
-                        Replace / Add Image 2 (Optional Secondary)
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          setEditSecondaryPreviewFile(e.target.files[0]);
-                          setRemoveSecondaryImage(false);
-                        }}
-                        className="w-full text-xs text-slate-450 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:text-blue-400 hover:file:bg-blue-500/20 cursor-pointer"
-                      />
-                      {(editSecondaryImageUrl || editingDesign?.secondary_image_url) && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <label className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-red-600 dark:text-red-400 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={removeSecondaryImage}
-                              onChange={(e) => setRemoveSecondaryImage(e.target.checked)}
-                              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-                            />
-                            <span>Remove Image 2</span>
-                          </label>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {/* Existing Images */}
+                      {editExistingImages.map((imgUrl, idx) => (
+                        <div key={`existing-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-dark-950 flex items-center justify-center shadow-sm">
+                          <img src={imgUrl} alt={`Existing ${idx + 1}`} className="w-full h-full object-cover" />
+                          <span className={`absolute top-1 left-1 text-[8px] font-bold px-1 py-0.5 rounded shadow ${
+                            idx === 0 ? 'bg-amber-500 text-white' : 'bg-slate-900/80 text-white'
+                          }`}>
+                            {idx === 0 ? 'Primary' : `#${idx + 1}`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveExistingEditImage(idx)}
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow transition-transform group-hover:scale-110 cursor-pointer z-10"
+                            title="Remove Image"
+                          >
+                            <X size={10} />
+                          </button>
                         </div>
-                      )}
+                      ))}
+
+                      {/* New Pending Added Files */}
+                      {editNewImageFiles.map((file, idx) => (
+                        <div key={`new-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border-2 border-emerald-500/50 bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shadow-sm">
+                          <img src={URL.createObjectURL(file)} alt={`New ${idx + 1}`} className="w-full h-full object-cover" />
+                          <span className="absolute top-1 left-1 text-[8px] font-bold px-1 py-0.5 rounded bg-emerald-600 text-white shadow">
+                            New +{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveNewEditImageFile(idx)}
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow transition-transform group-hover:scale-110 cursor-pointer z-10"
+                            title="Remove Image"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Big Plus Card for Adding Images in Edit Modal */}
+                      <label className="relative aspect-square rounded-xl border-2 border-dashed border-brand-500/50 hover:border-brand-500 bg-brand-500/5 hover:bg-brand-500/10 flex flex-col items-center justify-center cursor-pointer transition-all p-1.5 text-center group shadow-sm">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              handleAddEditImageFiles(e.target.files);
+                              e.target.value = '';
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        <div className="w-7 h-7 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition-transform">
+                          <Plus size={16} className="stroke-[3]" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-brand-600 dark:text-brand-400">
+                          + Add Image
+                        </span>
+                      </label>
                     </div>
 
-                    <div>
+                    {/* Replace Original ZIP file */}
+                    <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800">
                       <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0.5">
                         Replace Original ZIP File (Optional)
                       </label>
@@ -1619,6 +1705,7 @@ export default function AdminDashboard() {
                       />
                     </div>
                   </div>
+
 
                   {/* Actions footer inside right column */}
                   <div className="flex gap-3 pt-3 justify-end border-t border-slate-100 dark:border-slate-800">
@@ -1668,32 +1755,44 @@ export default function AdminDashboard() {
                       {designs.map((design) => (
                         <tr key={design.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
                           <td className="py-3 pr-4">
-                            <div className="flex items-center gap-1.5">
-                              <img
-                                src={design.preview_image_url}
-                                alt={`${design.title} primary`}
-                                className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
-                                title="Image 1 (Primary)"
-                              />
-                              {design.secondary_image_url ? (
-                                <div className="relative">
+                            {(() => {
+                              const dImages = getDesignImages(design);
+                              return (
+                                <div className="flex items-center gap-1.5">
                                   <img
-                                    src={design.secondary_image_url}
-                                    alt={`${design.title} secondary`}
+                                    src={dImages[0] || design.preview_image_url}
+                                    alt={`${design.title} primary`}
                                     className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
-                                    title="Image 2 (Secondary)"
+                                    title="Image 1 (Primary)"
                                   />
-                                  <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                    2
-                                  </span>
+                                  {dImages.length > 1 ? (
+                                    <div className="relative">
+                                      <img
+                                        src={dImages[1]}
+                                        alt={`${design.title} secondary`}
+                                        className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
+                                        title="Image 2"
+                                      />
+                                      {dImages.length > 2 ? (
+                                        <span className="absolute -top-1.5 -right-1.5 bg-brand-600 text-white text-[9px] font-extrabold rounded-full px-1 py-0.2 flex items-center justify-center shadow">
+                                          +{dImages.length - 1}
+                                        </span>
+                                      ) : (
+                                        <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                          2
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-400 font-medium px-1 bg-slate-100 dark:bg-dark-950 rounded">
+                                      1 img
+                                    </span>
+                                  )}
                                 </div>
-                              ) : (
-                                <span className="text-[10px] text-slate-400 font-medium px-1 bg-slate-100 dark:bg-dark-950 rounded">
-                                  1 img
-                                </span>
-                              )}
-                            </div>
+                              );
+                            })()}
                           </td>
+
                           <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
                             {design.title}
                           </td>
