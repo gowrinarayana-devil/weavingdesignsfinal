@@ -15,6 +15,7 @@ const MOCK_DESIGNS = [
     description: "WELCOME TO WEAVING DESIGNS\nROYAL PEACOCK DESIGN\n480 HOOKS 1120 WEAVING THREADS ( 760 MEENA , 360 JARI )\nWORK IN BOTH HANDLOOM WEAVING AND POWERLOOM JACQUARD",
     price: 180,
     preview_image_url: "https://hhpxxburlqkpgyrmqtmk.supabase.co/storage/v1/object/public/previews/fa37b61c-ee2d-4158-8e4a-16732b2e0893.jpg",
+    secondary_image_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
     category: "BUTTIS",
     is_featured: false,
     created_at: "2026-07-06T15:41:30.206147+00:00",
@@ -473,15 +474,38 @@ export default function Marketplace() {
                       {/* Image overlay gradient for depth */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
 
+                      {/* Primary Image 1 */}
                       <img
                         src={getOptimizedImageUrl(design.preview_image_url || design.image_url, 400, 75)}
                         alt={`Weaving Design Preview - ${design.title} - ${design.category}`}
                         loading={index < 4 ? "eager" : "lazy"}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 no-select"
+                        className={`w-full h-full object-cover transition-all duration-500 no-select ${
+                          design.secondary_image_url ? 'group-hover:opacity-0 scale-100' : 'group-hover:scale-105'
+                        }`}
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
                       />
+
+                      {/* Secondary Image 2 (Hover Preview if available) */}
+                      {design.secondary_image_url && (
+                        <img
+                          src={getOptimizedImageUrl(design.secondary_image_url, 400, 75)}
+                          alt={`Weaving Design Secondary Preview - ${design.title}`}
+                          loading="lazy"
+                          className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 no-select"
+                          onContextMenu={(e) => e.preventDefault()}
+                          draggable={false}
+                        />
+                      )}
                       
+                      {/* 2 Images Badge */}
+                      {design.secondary_image_url && (
+                        <span className="absolute top-2.5 right-2.5 bg-slate-900/75 backdrop-blur-[4px] text-white px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase border border-white/10 z-20 flex items-center gap-1 shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+                          2 Images
+                        </span>
+                      )}
+
                       {/* Category Label Overlay */}
                       <span className="absolute bottom-2.5 left-2.5 bg-slate-900/60 backdrop-blur-[4px] text-slate-200 px-2 py-0.5 rounded-md text-[9px] font-semibold tracking-wide border border-white/5 z-20">
                         {design.category}

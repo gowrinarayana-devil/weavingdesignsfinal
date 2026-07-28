@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [category, setCategory] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
+  const [secondaryPreviewFile, setSecondaryPreviewFile] = useState(null);
   const [zipFile, setZipFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [hooks, setHooks] = useState('');
@@ -52,6 +53,9 @@ export default function AdminDashboard() {
   const [editCategory, setEditCategory] = useState('');
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editPreviewFile, setEditPreviewFile] = useState(null);
+  const [editSecondaryPreviewFile, setEditSecondaryPreviewFile] = useState(null);
+  const [editSecondaryImageUrl, setEditSecondaryImageUrl] = useState(null);
+  const [removeSecondaryImage, setRemoveSecondaryImage] = useState(false);
   const [editZipFile, setEditZipFile] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [editHooks, setEditHooks] = useState('');
@@ -98,12 +102,13 @@ export default function AdminDashboard() {
             price: 299,
             is_featured: true,
             preview_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80',
+            secondary_image_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=150&q=80',
             zip_file_path: 'original-files/mock_zip_1.zip',
             categories: { name: 'Motif' }
           }
         ]);
       } else {
-        const { data: dbDesigns, error: designsErr } = await supabase
+        let { data: dbDesigns, error: designsErr } = await supabase
           .from('designs')
           .select(`
             id,
@@ -112,6 +117,7 @@ export default function AdminDashboard() {
             price,
             is_featured,
             preview_image_url,
+            secondary_image_url,
             zip_file_path,
             category_id,
             hooks,
@@ -122,6 +128,32 @@ export default function AdminDashboard() {
             categories (name)
           `)
           .order('created_at', { ascending: false });
+
+        // Fallback for databases where secondary_image_url column has not been added yet
+        if (designsErr && (designsErr.message?.includes('secondary_image_url') || designsErr.code === 'PGRST204' || designsErr.code === '42703')) {
+          const fallbackRes = await supabase
+            .from('designs')
+            .select(`
+              id,
+              title,
+              description,
+              price,
+              is_featured,
+              preview_image_url,
+              zip_file_path,
+              category_id,
+              hooks,
+              cards,
+              box,
+              reed,
+              formats,
+              categories (name)
+            `)
+            .order('created_at', { ascending: false });
+
+          dbDesigns = fallbackRes.data;
+          designsErr = fallbackRes.error;
+        }
 
         if (designsErr) throw designsErr;
         setDesigns(dbDesigns || []);
@@ -325,7 +357,7 @@ export default function AdminDashboard() {
     setSuccess('');
 
     if (!title || !price || !category || (!isDummyClient && (!previewFile || !zipFile))) {
-      setError('Please fill all fields and select both Preview and ZIP files.');
+      setError('Please fill all mandatory fields (Title, Category, Price, Primary Image 1, and ZIP file).');
       return;
     }
 
@@ -333,28 +365,46 @@ export default function AdminDashboard() {
 
     try {
       let previewUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80';
+      let secondaryUrl = secondaryPreviewFile ? 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80' : null;
       let zipPath = 'original-files/mock_design_file.zip';
 
       if (!isDummyClient) {
         const designId = crypto.randomUUID();
 
-        // 1. Upload preview image to public previews bucket
+        // 1. Upload mandatory preview image (Image 1) to public previews bucket
         const previewExt = previewFile.name.split('.').pop();
-        const previewFilePath = `${designId}.${previewExt}`;
+        const previewFilePath = `${designId}_1.${previewExt}`;
         const { error: previewUploadErr } = await supabase.storage
           .from('previews')
           .upload(previewFilePath, previewFile);
 
         if (previewUploadErr) throw previewUploadErr;
 
-        // Resolve public URL for preview image
+        // Resolve public URL for primary preview image
         const { data: publicUrlData } = supabase.storage
           .from('previews')
           .getPublicUrl(previewFilePath);
 
         previewUrl = publicUrlData.publicUrl;
 
-        // 2. Upload original ZIP to private original-files bucket
+        // 2. Upload optional secondary preview image (Image 2) if provided
+        if (secondaryPreviewFile) {
+          const secExt = secondaryPreviewFile.name.split('.').pop();
+          const secFilePath = `${designId}_2.${secExt}`;
+          const { error: secUploadErr } = await supabase.storage
+            .from('previews')
+            .upload(secFilePath, secondaryPreviewFile);
+
+          if (secUploadErr) throw secUploadErr;
+
+          const { data: secPublicUrlData } = supabase.storage
+            .from('previews')
+            .getPublicUrl(secFilePath);
+
+          secondaryUrl = secPublicUrlData.publicUrl;
+        }
+
+        // 3. Upload original ZIP to private original-files bucket
         const zipFilePath = `${designId}.zip`;
         const { error: zipUploadErr } = await supabase.storage
           .from('original-files')
@@ -363,11 +413,11 @@ export default function AdminDashboard() {
         if (zipUploadErr) throw zipUploadErr;
         zipPath = `original-files/${zipFilePath}`;
 
-        // 3. Resolve category ID
+        // 4. Resolve category ID
         const selectedCat = categories.find(c => c.name === category);
         if (!selectedCat) throw new Error('Invalid category chosen.');
 
-        // 4. Save design row in database table
+        // 5. Save design row in database table
         const { error: dbErr } = await supabase
           .from('designs')
           .insert({
@@ -377,6 +427,7 @@ export default function AdminDashboard() {
             category_id: selectedCat.id,
             price: parseFloat(price),
             preview_image_url: previewUrl,
+            secondary_image_url: secondaryUrl,
             zip_file_path: zipPath,
             is_featured: isFeatured,
             hooks: hooks || null,
@@ -389,7 +440,7 @@ export default function AdminDashboard() {
         if (dbErr) throw dbErr;
       }
 
-      setSuccess(`Weaving Design "${title}" uploaded and registered successfully!`);
+      setSuccess(`Weaving Design "${title}" uploaded successfully with ${secondaryUrl ? '2' : '1'} preview image(s)!`);
       // Reset inputs
       setTitle('');
       setDescription('');
@@ -397,6 +448,7 @@ export default function AdminDashboard() {
       setCategory('');
       setIsFeatured(false);
       setPreviewFile(null);
+      setSecondaryPreviewFile(null);
       setZipFile(null);
       setHooks('');
       setCards('');
@@ -409,7 +461,11 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error('Upload failed:', err);
-      setError(err.message || 'Failed to complete design asset upload.');
+      if (err.message?.includes('secondary_image_url') || err.code === 'PGRST204' || err.code === '42703') {
+        setError('Database schema update required: Please run "ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS secondary_image_url TEXT;" in your Supabase SQL Editor.');
+      } else {
+        setError(err.message || 'Failed to complete design asset upload.');
+      }
     } finally {
       setUploading(false);
     }
@@ -424,6 +480,9 @@ export default function AdminDashboard() {
     setEditCategory(design.categories?.name || '');
     setEditIsFeatured(design.is_featured);
     setEditPreviewFile(null);
+    setEditSecondaryPreviewFile(null);
+    setEditSecondaryImageUrl(design.secondary_image_url || null);
+    setRemoveSecondaryImage(false);
     setEditZipFile(null);
     setEditHooks(design.hooks || '');
     setEditCards(design.cards || '');
@@ -441,6 +500,9 @@ export default function AdminDashboard() {
     setEditCategory('');
     setEditIsFeatured(false);
     setEditPreviewFile(null);
+    setEditSecondaryPreviewFile(null);
+    setEditSecondaryImageUrl(null);
+    setRemoveSecondaryImage(false);
     setEditZipFile(null);
     setEditHooks('');
     setEditCards('');
@@ -458,15 +520,16 @@ export default function AdminDashboard() {
 
     try {
       let previewUrl = editingDesign.preview_image_url;
+      let secondaryUrl = removeSecondaryImage ? null : (editSecondaryImageUrl || editingDesign.secondary_image_url || null);
       let zipPath = editingDesign.zip_file_path;
 
       if (!isDummyClient) {
         const designId = editingDesign.id;
 
-        // 1. Upload new preview image if provided
+        // 1. Upload new Image 1 if provided
         if (editPreviewFile) {
           const previewExt = editPreviewFile.name.split('.').pop();
-          const previewFilePath = `${designId}_${Date.now()}.${previewExt}`;
+          const previewFilePath = `${designId}_1_${Date.now()}.${previewExt}`;
           const { error: previewUploadErr } = await supabase.storage
             .from('previews')
             .upload(previewFilePath, editPreviewFile);
@@ -480,7 +543,24 @@ export default function AdminDashboard() {
           previewUrl = publicUrlData.publicUrl;
         }
 
-        // 2. Upload new ZIP if provided
+        // 2. Upload new Image 2 if provided
+        if (editSecondaryPreviewFile && !removeSecondaryImage) {
+          const secExt = editSecondaryPreviewFile.name.split('.').pop();
+          const secFilePath = `${designId}_2_${Date.now()}.${secExt}`;
+          const { error: secUploadErr } = await supabase.storage
+            .from('previews')
+            .upload(secFilePath, editSecondaryPreviewFile);
+
+          if (secUploadErr) throw secUploadErr;
+
+          const { data: secPublicUrlData } = supabase.storage
+            .from('previews')
+            .getPublicUrl(secFilePath);
+
+          secondaryUrl = secPublicUrlData.publicUrl;
+        }
+
+        // 3. Upload new ZIP if provided
         if (editZipFile) {
           const zipFilePath = `${designId}_${Date.now()}.zip`;
           const { error: zipUploadErr } = await supabase.storage
@@ -491,11 +571,11 @@ export default function AdminDashboard() {
           zipPath = `original-files/${zipFilePath}`;
         }
 
-        // 3. Resolve Category ID
+        // 4. Resolve Category ID
         const selectedCat = categories.find(c => c.name === editCategory);
         if (!selectedCat) throw new Error('Invalid category chosen.');
 
-        // 4. Update row in Supabase designs table
+        // 5. Update row in Supabase designs table
         const { error: dbErr } = await supabase
           .from('designs')
           .update({
@@ -504,6 +584,7 @@ export default function AdminDashboard() {
             category_id: selectedCat.id,
             price: parseFloat(editPrice),
             preview_image_url: previewUrl,
+            secondary_image_url: secondaryUrl,
             zip_file_path: zipPath,
             is_featured: editIsFeatured,
             hooks: editHooks || null,
@@ -525,7 +606,9 @@ export default function AdminDashboard() {
               description: editDescription,
               price: parseFloat(editPrice),
               categories: { name: editCategory },
-              is_featured: editIsFeatured
+              is_featured: editIsFeatured,
+              preview_image_url: previewUrl,
+              secondary_image_url: secondaryUrl
             };
           }
           return d;
@@ -539,7 +622,11 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error('Update failed:', err);
-      setError(err.message || 'Failed to update design.');
+      if (err.message?.includes('secondary_image_url') || err.code === 'PGRST204' || err.code === '42703') {
+        setError('Database schema update required: Please run "ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS secondary_image_url TEXT;" in your Supabase SQL Editor.');
+      } else {
+        setError(err.message || 'Failed to update design.');
+      }
     } finally {
       setUpdating(false);
     }
@@ -1005,28 +1092,58 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Preview Image {isDummyClient && '(Optional in Sandbox)'}
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
+                    Image 1 (Mandatory) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => setPreviewFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
                   />
+                  {previewFile && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">
+                      ✓ Selected: {previewFile.name}
+                    </p>
+                  )}
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Original ZIP File {isDummyClient && '(Optional in Sandbox)'}
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
+                    Image 2 (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setSecondaryPreviewFile(e.target.files[0])}
+                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:text-blue-400 hover:file:bg-blue-500/20 cursor-pointer"
+                  />
+                  {secondaryPreviewFile ? (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">
+                      ✓ Selected: {secondaryPreviewFile.name}
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-slate-400 mt-1 italic">Slide scroll second image</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
+                    Original ZIP File <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
                     accept=".zip"
                     onChange={(e) => setZipFile(e.target.files[0])}
-                    className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
+                    className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-500/10 file:text-brand-600 dark:file:text-brand-400 hover:file:bg-brand-500/20 cursor-pointer"
                   />
+                  {zipFile && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">
+                      ✓ Selected: {zipFile.name}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1449,10 +1566,10 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-1.5">
+                  <div className="space-y-2.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-                        Replace Preview Image (Optional)
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0.5">
+                        Replace Image 1 (Mandatory Primary)
                       </label>
                       <input
                         type="file"
@@ -1463,7 +1580,35 @@ export default function AdminDashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0.5">
+                        Replace / Add Image 2 (Optional Secondary)
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          setEditSecondaryPreviewFile(e.target.files[0]);
+                          setRemoveSecondaryImage(false);
+                        }}
+                        className="w-full text-xs text-slate-450 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:text-blue-400 hover:file:bg-blue-500/20 cursor-pointer"
+                      />
+                      {(editSecondaryImageUrl || editingDesign?.secondary_image_url) && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <label className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-red-600 dark:text-red-400 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={removeSecondaryImage}
+                              onChange={(e) => setRemoveSecondaryImage(e.target.checked)}
+                              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+                            />
+                            <span>Remove Image 2</span>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0.5">
                         Replace Original ZIP File (Optional)
                       </label>
                       <input
@@ -1511,7 +1656,7 @@ export default function AdminDashboard() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        <th className="pb-3 pr-4">Image</th>
+                        <th className="pb-3 pr-4">Images</th>
                         <th className="pb-3 pr-4">Design Title</th>
                         <th className="pb-3 pr-4">Category</th>
                         <th className="pb-3 pr-4">Price</th>
@@ -1523,11 +1668,31 @@ export default function AdminDashboard() {
                       {designs.map((design) => (
                         <tr key={design.id} className="hover:bg-slate-50/50 dark:hover:bg-dark-950/20 transition-colors">
                           <td className="py-3 pr-4">
-                            <img
-                              src={design.preview_image_url}
-                              alt={design.title}
-                              className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
-                            />
+                            <div className="flex items-center gap-1.5">
+                              <img
+                                src={design.preview_image_url}
+                                alt={`${design.title} primary`}
+                                className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
+                                title="Image 1 (Primary)"
+                              />
+                              {design.secondary_image_url ? (
+                                <div className="relative">
+                                  <img
+                                    src={design.secondary_image_url}
+                                    alt={`${design.title} secondary`}
+                                    className="w-10 h-10 object-cover rounded-lg border border-slate-200/50 dark:border-slate-800"
+                                    title="Image 2 (Secondary)"
+                                  />
+                                  <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                    2
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-medium px-1 bg-slate-100 dark:bg-dark-950 rounded">
+                                  1 img
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="py-3 pr-4 font-semibold text-slate-700 dark:text-slate-200">
                             {design.title}

@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS public.designs (
     description TEXT,
     category_id UUID REFERENCES public.categories(id) ON DELETE RESTRICT,
     price NUMERIC NOT NULL CHECK (price >= 0),
-    preview_image_url TEXT NOT NULL, -- Public preview URL
+    preview_image_url TEXT NOT NULL, -- Public preview URL (Mandatory Primary Image)
+    secondary_image_url TEXT,        -- Public preview URL (Optional Secondary Image)
     zip_file_path TEXT NOT NULL,     -- Private storage path (original-files/design_id.zip)
     is_featured BOOLEAN NOT NULL DEFAULT false,
     hooks TEXT,                      -- Weaving hook count parameter (e.g. 480 hooks)
@@ -46,6 +47,9 @@ CREATE TABLE IF NOT EXISTS public.designs (
     formats TEXT,                    -- Supported file formats (e.g. DST, PES, EXP, XXX)
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Migration for existing databases:
+-- ALTER TABLE public.designs ADD COLUMN IF NOT EXISTS secondary_image_url TEXT;
 
 -- Enable Row Level Security (RLS) on designs
 ALTER TABLE public.designs ENABLE ROW LEVEL SECURITY;
